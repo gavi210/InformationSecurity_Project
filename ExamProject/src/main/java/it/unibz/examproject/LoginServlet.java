@@ -34,7 +34,11 @@ public class LoginServlet extends HttpServlet {
     public LoginServlet() {
         super();
     }
-    
+
+	/**
+	 * set up the connection with the database
+	 * @throws ServletException
+	 */
     public void init() throws ServletException {
     	try {
 			Class.forName(DRIVER_CLASS);
