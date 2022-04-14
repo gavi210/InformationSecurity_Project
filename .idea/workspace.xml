@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="6050b2cb-b670-4be4-aaa4-01b03826ae65" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/InformationSecurity_Project.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ExamProject/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ExamProject/.idea/artifacts/ExamProject_war.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ExamProject/.idea/artifacts/ExamProject_war_exploded.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ExamProject/.idea/compiler.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ExamProject/.idea/encodings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ExamProject/.idea/jarRepositories.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ExamProject/.idea/libraries/Maven__jakarta_servlet_jakarta_servlet_api_5_0_0.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ExamProject/.idea/libraries/Maven__javax_servlet_javax_servlet_api_4_0_1.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ExamProject/.idea/libraries/Maven__org_apiguardian_apiguardian_api_1_1_2.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ExamProject/.idea/libraries/Maven__org_junit_jupiter_junit_jupiter_api_5_8_1.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ExamProject/.idea/libraries/Maven__org_junit_jupiter_junit_jupiter_engine_5_8_1.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ExamProject/.idea/libraries/Maven__org_junit_platform_junit_platform_commons_1_8_1.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ExamProject/.idea/libraries/Maven__org_junit_platform_junit_platform_engine_1_8_1.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ExamProject/.idea/libraries/Maven__org_opentest4j_opentest4j_1_2_0.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ExamProject/SQL Server setup.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ExamProject/WebApp setup.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ExamProject/sqlScript.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ExamProject/src/main/java/it/unibz/examproject/LoginServlet.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ExamProject/src/main/java/it/unibz/examproject/NavigationServlet.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ExamProject/src/main/java/it/unibz/examproject/RegisterServlet.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ExamProject/src/main/java/it/unibz/examproject/SendMailServlet.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ExamProject/src/main/webapp/META-INF/MANIFEST.MF" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ExamProject/src/main/webapp/home.jsp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ExamProject/src/main/webapp/login.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ExamProject/src/main/webapp/register.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ExamProject/src/main/webapp/style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ExamProject/ExamProject.iml" beforeDir="false" afterPath="$PROJECT_DIR$/ExamProject/ExamProject.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ExamProject/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/ExamProject/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ExamProject/src/main/webapp/WEB-INF/web.xml" beforeDir="false" afterPath="$PROJECT_DIR$/ExamProject/src/main/webapp/WEB-INF/web.xml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="27na6XqHP4hMjKornWFm6HsCt58" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File" value="GitIgnore" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="6050b2cb-b670-4be4-aaa4-01b03826ae65" name="Changes" comment="" />
+      <created>1649958128730</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1649958128730</updated>
+      <workItem from="1649958130609" duration="495000" />
+      <workItem from="1649959453490" duration="117000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+  </component>
+</project>
