@@ -56,6 +56,13 @@ public class LoginServlet extends HttpServlet {
 		}
     }
 
+	/**
+	 * onPost
+	 * @param request
+	 * @param response
+	 * @throws ServletException
+	 * @throws IOException
+	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html");
 		
