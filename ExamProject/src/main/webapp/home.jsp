@@ -11,13 +11,11 @@
 <body>
 	<nav class="navbar">
 	  <div class="box">
-	  	<div>
+	  	<div class="box">
 			<img src="images/email_icon.jpg" align="left" />
-			<p>E-MAIL CLIENT
-				<br><% out.println(request.getAttribute("email")); %>
-			</p>
+			<p>Welcome: <% out.println(request.getAttribute("email")); %></p>
 	  	</div>
-	  	<div id="right"><a href="login.html">Logout</a></div>
+	  	<div class="btn-group"><a href="login.html">Logout</a></div>
 	  </div>
 	</nav>
 	

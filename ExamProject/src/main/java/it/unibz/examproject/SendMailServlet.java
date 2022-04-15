@@ -22,7 +22,7 @@ public class SendMailServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
 	private static final String USER = "sa";
-	private static final String PWD = "Riva96_shared_db";
+	private static final String PWD = "Strong.Pwd-123";
 	private static final String DRIVER_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
 	private static final String DB_URL = "jdbc:sqlserver://localhost:1433;databaseName=examDB;encrypt=true;trustServerCertificate=true;";
     

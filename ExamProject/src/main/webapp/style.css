@@ -19,6 +19,12 @@
     max-height: 6%;
 }
 
+/* Navigation bar boxes - separate the logout button from user email */
+.navbar .box {
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
 .box {
    	display: flex;
    	align-items:center;
