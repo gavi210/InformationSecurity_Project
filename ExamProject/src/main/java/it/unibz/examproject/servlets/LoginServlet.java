@@ -1,31 +1,24 @@
-package it.unibz.examproject;
+package it.unibz.examproject.servlets;
 
+import it.unibz.examproject.db.DatabaseConnection;
 import jakarta.servlet.http.HttpServlet;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Properties;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-/**
- * Servlet implementation class HelloWorldServlet
- */
 @WebServlet("/LoginServlet")
 public class LoginServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-    
-	private static final String USER = "sa";
-	private static final String PWD = "Strong.Pwd-123";
-	private static final String DRIVER_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
-	private static final String DB_URL = "jdbc:sqlserver://localhost:1433;databaseName=examDB;encrypt=true;trustServerCertificate=true;";
-    
+
 	private static Connection conn;
 	
 	/**
@@ -37,24 +30,19 @@ public class LoginServlet extends HttpServlet {
 
 	/**
 	 * set up the connection with the database
-	 * @throws ServletException
 	 */
-    public void init() throws ServletException {
+    public void init() {
     	try {
-			Class.forName(DRIVER_CLASS);
-			
-		    Properties connectionProps = new Properties();
-		    connectionProps.put("user", USER);
-		    connectionProps.put("password", PWD);
-	
-	        conn = DriverManager.getConnection(DB_URL, connectionProps);
-		    
-		    //System.out.println("User \"" + USER + "\" connected to database.");
+			// configuration put in the web content
+			InputStream dbConnectionProperties = getServletContext().getResourceAsStream("/dbConfig.properties");
+			conn = DatabaseConnection.initializeDatabase(dbConnectionProperties);
     	
     	} catch (ClassNotFoundException | SQLException e) {
 			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-    }
+	}
 
 	/**
 	 * onPost

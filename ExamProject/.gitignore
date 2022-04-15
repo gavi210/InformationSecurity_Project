@@ -47,3 +47,5 @@ release.properties
 dependency-reduced-pom.xml
 
 commands_sql_server.md
+
+src/main/webapp/dbConfig.properties
