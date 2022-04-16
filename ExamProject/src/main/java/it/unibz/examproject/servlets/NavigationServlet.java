@@ -100,7 +100,15 @@ public class NavigationServlet extends HttpServlet {
 			return "ERROR IN FETCHING INBOX MAILS!";
 		}
 	}
-	
+
+	/**
+	 * HTML code returned the user. Here should be placed the encryption process by the user with the public key of the client.
+	 * Servlet should provide back the code to encrypt the input. With the encrypted input, send the information over the network with the
+	 * doPost request.
+	 * @param email
+	 * @param pwd
+	 * @return
+	 */
 	private String getHtmlForNewMail(String email, String pwd) {
 		return 
 			"<form id=\"submitForm\" class=\"form-resize\" action=\"SendMailServlet\" method=\"post\">\r\n"

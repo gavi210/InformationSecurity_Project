@@ -23,11 +23,6 @@ import jakarta.servlet.http.HttpServletResponse;
 public class RegisterServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
     
-	private static final String USER = "sa";
-	private static final String PWD = "Strong.Pwd-123";
-	private static final String DRIVER_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
-	private static final String DB_URL = "jdbc:sqlserver://localhost:1433;databaseName=examDB;encrypt=true;trustServerCertificate=true;";
-    
 	private static Connection conn;
 	
     /**
@@ -54,11 +49,18 @@ public class RegisterServlet extends HttpServlet {
 		response.setContentType("text/html");
 		
 		// The replacement escapes apostrophe special character in order to store it in SQL
+
+		/**
+		 * maybe include the preprocessing part to any input: being stored in the database, and therefore, apply all validations and cleanings
+		 */
 		String name = request.getParameter("name").replace("'", "''");
 		String surname = request.getParameter("surname").replace("'", "''");;
 		String email = request.getParameter("email").replace("'", "''");;
 		String pwd = request.getParameter("password").replace("'", "''");;
-		
+
+		/**
+		 * sql injection
+		 */
 		try (Statement st = conn.createStatement()) {
 			ResultSet sqlRes = st.executeQuery(
 				"SELECT * "
@@ -67,6 +69,7 @@ public class RegisterServlet extends HttpServlet {
 			);
 			
 			if (sqlRes.next()) {
+				// maybe provide such answers back to the user, but not related to the scope of the project
 				System.out.println("Email already registered!");
 				request.getRequestDispatcher("register.html").forward(request, response);
 				
