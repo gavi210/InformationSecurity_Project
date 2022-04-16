@@ -46,6 +46,13 @@ public class SendMailServlet extends HttpServlet {
 		}
     }
 
+	/**
+	 * how do we ensure that the client submitting the request is the one logged in? authorization and authentication maybe
+	 * @param request
+	 * @param response
+	 * @throws ServletException
+	 * @throws IOException
+	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html");
 		
