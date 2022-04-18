@@ -11,11 +11,6 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -81,10 +76,10 @@ public class LoginServlet extends HttpServlet {
 			/**
 			 * sql injection: validate inputs
 			 */
-			try (Statement st = conn.createStatement()) {
-				Query query = new LoginQuery(email, pwd);
+			try {
+				Query query = new LoginQuery(conn, email, pwd);
 
-				ResultSet sqlRes = st.executeQuery(query.getQueryString());
+				ResultSet sqlRes = query.executeQuery();
 
 				// valid credentials
 				if (sqlRes.next()) {

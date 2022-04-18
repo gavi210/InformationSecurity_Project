@@ -1,6 +1,9 @@
 package it.unibz.examproject.servlets;
 
 import it.unibz.examproject.db.DatabaseConnection;
+import it.unibz.examproject.db.queries.Query;
+import it.unibz.examproject.db.queries.ReceivedEmailsQuery;
+import it.unibz.examproject.db.queries.SentEmailsQuery;
 import it.unibz.examproject.util.Authentication;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServlet;
@@ -81,12 +84,9 @@ public class NavigationServlet extends HttpServlet {
 	}
 
 	private String getHtmlForInbox(String email) {
-		try (Statement st = conn.createStatement()) {
-			ResultSet sqlRes = st.executeQuery(
-				"SELECT * FROM mail "
-				+ "WHERE receiver='" + email + "'"
-				+ "ORDER BY [time] DESC"
-			);
+		try {
+			Query getReceivedEmailsQuery = new ReceivedEmailsQuery(conn, email);
+			ResultSet sqlRes = getReceivedEmailsQuery.executeQuery();
 			
 			StringBuilder output = new StringBuilder();
 			output.append("<div>\r\n");
@@ -131,13 +131,10 @@ public class NavigationServlet extends HttpServlet {
 	}
 	
 	private String getHtmlForSent(String email) {
-		try (Statement st = conn.createStatement()) {
-			ResultSet sqlRes = st.executeQuery(
-				"SELECT * FROM mail "
-				+ "WHERE sender='" + email + "'"
-				+ "ORDER BY [time] DESC"
-			);
-			
+		try {
+			Query sentEmailsQuery = new SentEmailsQuery(conn, email);
+			ResultSet sqlRes = sentEmailsQuery.executeQuery();
+
 			StringBuilder output = new StringBuilder();
 			output.append("<div>\r\n");
 			

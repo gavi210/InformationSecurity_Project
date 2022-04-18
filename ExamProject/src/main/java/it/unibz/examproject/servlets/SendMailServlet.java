@@ -1,6 +1,8 @@
 package it.unibz.examproject.servlets;
 
 import it.unibz.examproject.db.DatabaseConnection;
+import it.unibz.examproject.db.queries.InsertNewMailQuery;
+import it.unibz.examproject.db.queries.Query;
 import it.unibz.examproject.util.Authentication;
 import it.unibz.examproject.util.RequestSanitizer;
 import jakarta.servlet.http.HttpServlet;
@@ -78,11 +80,9 @@ public class SendMailServlet extends HttpServlet {
 			String body = request.getParameter("body").replace("'", "''");
 			String timestamp = new Date(System.currentTimeMillis()).toInstant().toString();
 
-			try (Statement st = conn.createStatement()) {
-				st.execute(
-						"INSERT INTO mail ( sender, receiver, subject, body, [time] ) "
-								+ "VALUES ( '" + sender + "', '" + receiver + "', '" + subject + "', '" + body + "', '" + timestamp + "' )"
-				);
+			try {
+				Query insertNewEmail = new InsertNewMailQuery(conn, sender, receiver, subject, body, timestamp);
+				insertNewEmail.executeQuery();
 
 			} catch (SQLException e) {
 				e.printStackTrace();

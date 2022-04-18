@@ -10,11 +10,8 @@ import jakarta.servlet.http.HttpServlet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Properties;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -77,9 +74,9 @@ public class RegisterServlet extends HttpServlet {
 			/**
 			 * sql injection
 			 */
-			try (Statement st = conn.createStatement()) {
-				Query existsUserQuery = new ExistsUserQuery(email);
-				ResultSet sqlRes = st.executeQuery(existsUserQuery.getQueryString());
+			try {
+				Query existsUserQuery = new ExistsUserQuery(conn, email);
+				ResultSet sqlRes = existsUserQuery.executeQuery();
 
 				if (sqlRes.next()) {
 					response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -88,8 +85,8 @@ public class RegisterServlet extends HttpServlet {
 					response.getWriter().println("</html>");
 				} else {
 					// add new account to database
-					Query registrationQuery = new RegisterQuery(name, surname, email, pwd);
-					st.execute(registrationQuery.getQueryString());
+					Query registrationQuery = new RegisterQuery(conn, name, surname, email, pwd);
+					registrationQuery.executeQuery();
 
 					Authentication.setUserSession(session, email);
 
