@@ -6,6 +6,9 @@ import it.unibz.examproject.db.queries.Query;
 import it.unibz.examproject.db.queries.RegisterQuery;
 import it.unibz.examproject.util.Authentication;
 import it.unibz.examproject.util.RequestSanitizer;
+import it.unibz.examproject.util.userinput.EmailValidator;
+import it.unibz.examproject.util.userinput.NameSurnameValidator;
+import it.unibz.examproject.util.userinput.PasswordValidator;
 import jakarta.servlet.http.HttpServlet;
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,48 +59,53 @@ public class RegisterServlet extends HttpServlet {
 		if (Authentication.isUserLogged(session)) {
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			response.getWriter().print("<html><head><title>User already logged in!</title></head>");
+			response.getWriter().print("<body>User already logged in!</body>");
 			response.getWriter().println("</html>");
 		}
 		else {
-			// The replacement escapes apostrophe special character in order to store it in SQL
+			// validate user inputs
+			String name = request.getParameter("name"); // since parametrized query, replacement is not needed anymore
+			String surname = request.getParameter("surname");
+			String email = request.getParameter("email");
+			String pwd = request.getParameter("password");
 
-			/**
-			 * maybe include the preprocessing part to any input: being stored in the database, and therefore, apply all validations and cleanings
-			 */
+			NameSurnameValidator nameValidator = new NameSurnameValidator(name);
+			NameSurnameValidator surnameValidator = new NameSurnameValidator(surname);
+			EmailValidator emailValidator = new EmailValidator(email);
+			PasswordValidator passwordValidator = new PasswordValidator(pwd);
 
-			// introduce some validation for the input parameters.
-			String name = request.getParameter("name").replace("'", "''");
-			String surname = request.getParameter("surname").replace("'", "''");;
-			String email = request.getParameter("email").replace("'", "''");;
-			String pwd = request.getParameter("password").replace("'", "''");;
+			if(nameValidator.isValid() && surnameValidator.isValid() && emailValidator.isValid() && passwordValidator.isValid()) {
+				try {
+					Query existsUserQuery = new ExistsUserQuery(conn, email);
+					ResultSet sqlRes = existsUserQuery.executeQuery();
 
-			/**
-			 * sql injection
-			 */
-			try {
-				Query existsUserQuery = new ExistsUserQuery(conn, email);
-				ResultSet sqlRes = existsUserQuery.executeQuery();
+					if (sqlRes.next()) {
+						response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+						response.getWriter().print("<html><head><title>Email already in use!</title></head>");
+						response.getWriter().print("<body>Email already in use!</body>");
+						response.getWriter().println("</html>");
+					} else {
+						// add new account to database
+						Query registrationQuery = new RegisterQuery(conn, name, surname, email, pwd);
+						registrationQuery.executeQuery();
 
-				if (sqlRes.next()) {
-					response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-					response.getWriter().print("<html><head><title>Email already in use!</title></head>");
-					response.getWriter().print("<body>Email already in use!</body>");
-					response.getWriter().println("</html>");
-				} else {
-					// add new account to database
-					Query registrationQuery = new RegisterQuery(conn, name, surname, email, pwd);
-					registrationQuery.executeQuery();
+						Authentication.setUserSession(session, email);
 
-					Authentication.setUserSession(session, email);
+						RequestSanitizer.removeAllAttributes(request);
 
-					RequestSanitizer.removeAllAttributes(request);
+						request.getRequestDispatcher("home.jsp").forward(request, response);
+					}
 
-					request.getRequestDispatcher("home.jsp").forward(request, response);
+				} catch (SQLException e) {
+					e.printStackTrace();
+					request.getRequestDispatcher("register.html").forward(request, response);
 				}
-
-			} catch (SQLException e) {
-				e.printStackTrace();
-				request.getRequestDispatcher("register.html").forward(request, response);
+			}
+			else {
+				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+				response.getWriter().print("<html><head><title>Check input correctness!</title></head>");
+				response.getWriter().print("<body>Check input correctness!</body>");
+				response.getWriter().println("</html>");
 			}
 		}
 	}

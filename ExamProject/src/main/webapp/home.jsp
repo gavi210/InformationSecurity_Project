@@ -31,14 +31,12 @@
 	
 	<div class="grid-container">
 		<form class="btn-group" action="NavigationServlet" method="post">
-			<input type="hidden" name="email" value="<%= request.getAttribute("email") %>">
-			<input type="hidden" name="password" value="<%= request.getAttribute("password") %>">
-			<input type="submit" name="newMail" value="New Mail">
-			<input type="submit" name="inbox" value="Inbox">
-			<input type="submit" name="sent" value="Sent">
+			<input type="submit" name="userAction" value="NEW_EMAIL">
+			<input type="submit" name="userAction" value="INBOX">
+			<input type="submit" name="userAction" value="SENT">
 		</form>
 		
-		<%= request.getAttribute("content")!=null ? request.getAttribute("content") : "" %>
+		<%= request.getAttribute("content") != null ? request.getAttribute("content") : "" %>
 	</div>
 </body>
 </html>

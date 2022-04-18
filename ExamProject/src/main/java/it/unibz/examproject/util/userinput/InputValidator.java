@@ -8,6 +8,4 @@ public abstract class InputValidator {
     }
 
     public abstract boolean isValid();
-
-    public abstract String sanitize();
 }
