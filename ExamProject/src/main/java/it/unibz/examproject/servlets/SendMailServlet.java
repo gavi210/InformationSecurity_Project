@@ -1,6 +1,8 @@
 package it.unibz.examproject.servlets;
 
 import it.unibz.examproject.db.DatabaseConnection;
+import it.unibz.examproject.util.Authentication;
+import it.unibz.examproject.util.RequestSanitizer;
 import jakarta.servlet.http.HttpServlet;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,12 +11,13 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
-import java.util.Properties;
+import java.util.Map;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * Servlet implementation class SendMailServlet
@@ -55,25 +58,38 @@ public class SendMailServlet extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html");
-		
-		String sender = request.getParameter("email").replace("'", "''");;
-		String receiver = request.getParameter("receiver").replace("'", "''");;
-		String subject = request.getParameter("subject").replace("'", "''");;
-		String body = request.getParameter("body").replace("'", "''");;
-		String timestamp = new Date(System.currentTimeMillis()).toInstant().toString();
-		
-		try (Statement st = conn.createStatement()) {
-			st.execute(
-				"INSERT INTO mail ( sender, receiver, subject, body, [time] ) "
-				+ "VALUES ( '" + sender + "', '" + receiver + "', '" + subject + "', '" + body + "', '" + timestamp + "' )"
-			);
-			
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		
-		request.setAttribute("email", sender);
-		request.getRequestDispatcher("home.jsp").forward(request, response);
-	}
 
+		HttpSession session = request.getSession();
+
+		if(!Authentication.isUserLogged(session)) {
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			response.getWriter().print("<html><head><title>Login first!</title></head>");
+			response.getWriter().print("<body>Login first!</body>");
+			response.getWriter().println("</html>");
+		}
+		else {
+			// validate user info
+			// retrieved from the current session
+			Map<String, String> userInfo = (Map<String, String>) session.getAttribute("user");
+			String sender = userInfo.get("email");
+
+			String receiver = request.getParameter("receiver").replace("'", "''");
+			String subject = request.getParameter("subject").replace("'", "''");
+			String body = request.getParameter("body").replace("'", "''");
+			String timestamp = new Date(System.currentTimeMillis()).toInstant().toString();
+
+			try (Statement st = conn.createStatement()) {
+				st.execute(
+						"INSERT INTO mail ( sender, receiver, subject, body, [time] ) "
+								+ "VALUES ( '" + sender + "', '" + receiver + "', '" + subject + "', '" + body + "', '" + timestamp + "' )"
+				);
+
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+
+			RequestSanitizer.removeAllAttributes(request);
+			request.getRequestDispatcher("home.jsp").forward(request, response);
+		}
+	}
 }

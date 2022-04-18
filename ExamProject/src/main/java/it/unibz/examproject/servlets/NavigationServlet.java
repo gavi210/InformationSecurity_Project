@@ -1,6 +1,8 @@
 package it.unibz.examproject.servlets;
 
 import it.unibz.examproject.db.DatabaseConnection;
+import it.unibz.examproject.util.Authentication;
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServlet;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,12 +11,15 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * Servlet implementation class NavigationServlet
@@ -22,11 +27,6 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet("/NavigationServlet")
 public class NavigationServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-    
-	private static final String USER = "sa";
-	private static final String PWD = "Strong.Pwd-123";
-	private static final String DRIVER_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
-	private static final String DB_URL = "jdbc:sqlserver://localhost:1433;databaseName=examDB;encrypt=true;trustServerCertificate=true;";
     
 	private static Connection conn;
     /**
@@ -54,19 +54,30 @@ public class NavigationServlet extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html");
-		
-		String email = request.getParameter("email").replace("'", "''");;
-		String pwd = request.getParameter("password").replace("'", "''");;
-				
-		if (request.getParameter("newMail") != null)
-			request.setAttribute("content", getHtmlForNewMail(email, pwd));
-		else if (request.getParameter("inbox") != null)
-			request.setAttribute("content", getHtmlForInbox(email));
-		else if (request.getParameter("sent") != null)
-			request.setAttribute("content", getHtmlForSent(email));
-		
-		request.setAttribute("email", email);
-		request.getRequestDispatcher("home.jsp").forward(request, response);
+
+		// check if the user is logged in
+		HttpSession session = request.getSession(false);
+
+		if(!Authentication.isUserLogged(session)) {
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			response.getWriter().print("<html><head><title>Login first!</title></head>");
+			response.getWriter().print("<body>Login first!</body>");
+			response.getWriter().println("</html>");
+		}
+		else {
+			Map<String,String> userInfo = (Map<String, String>) session.getAttribute("user");
+			String email = userInfo.get("email");
+
+			// decide the next action based on  input parameters
+			if (request.getParameter("newMail") != null)
+				request.setAttribute("content", getHtmlForNewMail(email));
+			else if (request.getParameter("inbox") != null)
+				request.setAttribute("content", getHtmlForInbox(email));
+			else if (request.getParameter("sent") != null)
+				request.setAttribute("content", getHtmlForSent(email));
+
+			request.getRequestDispatcher("home.jsp").forward(request, response);
+		}
 	}
 
 	private String getHtmlForInbox(String email) {
@@ -106,14 +117,12 @@ public class NavigationServlet extends HttpServlet {
 	 * Servlet should provide back the code to encrypt the input. With the encrypted input, send the information over the network with the
 	 * doPost request.
 	 * @param email
-	 * @param pwd
 	 * @return
 	 */
-	private String getHtmlForNewMail(String email, String pwd) {
+	private String getHtmlForNewMail(String email) {
 		return 
 			"<form id=\"submitForm\" class=\"form-resize\" action=\"SendMailServlet\" method=\"post\">\r\n"
 			+ "		<input type=\"hidden\" name=\"email\" value=\""+email+"\">\r\n"
-			+ "		<input type=\"hidden\" name=\"password\" value=\""+pwd+"\">\r\n"
 			+ "		<input class=\"single-row-input\" type=\"email\" name=\"receiver\" placeholder=\"Receiver\" required>\r\n"
 			+ "		<input class=\"single-row-input\" type=\"text\"  name=\"subject\" placeholder=\"Subject\" required>\r\n"
 			+ "		<textarea class=\"textarea-input\" name=\"body\" placeholder=\"Body\" wrap=\"hard\" required></textarea>\r\n"

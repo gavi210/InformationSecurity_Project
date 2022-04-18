@@ -1,3 +1,5 @@
+<%@ page import="jakarta.servlet.http.HttpSession" %>
+<%@ page import="java.util.Map" %>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1"%>
 <!DOCTYPE html>
 <html>
@@ -13,9 +15,17 @@
 	  <div class="box">
 	  	<div class="box">
 			<img src="images/email_icon.jpg" align="left" />
-			<p>Welcome: <% out.println(request.getAttribute("email")); %></p>
+			<p>Welcome: <%
+				Map<String, String> userInfo = (Map<String, String>) session.getAttribute("user");
+				String userEmail = null;
+				if (userInfo != null)
+					userEmail = userInfo.get("email");
+				out.println(userEmail);
+			%></p>
 	  	</div>
-	  	<div class="btn-group"><a href="login.html">Logout</a></div>
+	  	<form class="btn-group" action="LogoutServlet" method="post">
+			<input type="submit" name="logout" value="Logout">
+		</form>
 	  </div>
 	</nav>
 	

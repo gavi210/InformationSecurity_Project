@@ -1,26 +1,31 @@
 package it.unibz.examproject.servlets;
 
 import it.unibz.examproject.db.DatabaseConnection;
+import it.unibz.examproject.util.Authentication;
+import it.unibz.examproject.util.RequestSanitizer;
 import jakarta.servlet.http.HttpServlet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 @WebServlet("/LoginServlet")
 public class LoginServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	private static Connection conn;
-
 
 	/**
      * @see HttpServlet#HttpServlet()
@@ -54,45 +59,48 @@ public class LoginServlet extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html");
-		
-		String email = request.getParameter("email").replace("'", "''");;
-		String pwd = request.getParameter("password").replace("'", "''");;
 
-		/**
-		 * sql injection: validate inputs
-		 */
-		try (Statement st = conn.createStatement()) {
-			ResultSet sqlRes = st.executeQuery(
-				"SELECT * "
-				+ "FROM [user] "
-				+ "WHERE email='" + email + "' "
-					+ "AND password='" + pwd + "'"
-			);
-			
-			if (sqlRes.next()) {
-				// 3: column index for the email in the table
-				request.setAttribute("email", sqlRes.getString(3));
+		// if user logged in, DROP the request
+		HttpSession session = request.getSession();
 
-				// 4: column index for the password in the table - ? why should it be returned the user? it has already prompted the password and knows it
-				request.setAttribute("password", sqlRes.getString(4));
+		if (Authentication.isUserLogged(session)) {
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			response.getWriter().print("<html><head><title>User already logged in!</title></head>");
+			response.getWriter().print("<body>User already logged in!</body>");
+			response.getWriter().println("</html>");
+		}
 
-				//System.out.println(String.format("User: %s login in successfully!", request.getParameter("email")));
+		// starts the login sequence
+		else {
+			// later should be validated
+			String email = request.getParameter("email").replace("'", "''");;
+			String pwd = request.getParameter("password").replace("'", "''");;
 
-				request.setAttribute("content", "");
+			/**
+			 * sql injection: validate inputs
+			 */
+			try (Statement st = conn.createStatement()) {
+				ResultSet sqlRes = st.executeQuery(
+						"SELECT * "
+								+ "FROM [user] "
+								+ "WHERE email='" + email + "' "
+								+ "AND password='" + pwd + "'"
+				);
 
-				// populate the response with attributes email and password, then forward the main page.
-				request.getRequestDispatcher("home.jsp").forward(request, response);
-				
-				
-			} else {
-				// System.out.println("Login failed!");
-				// ask again the user to log in
+				// valid credentials
+				if (sqlRes.next()) {
+					Authentication.setUserSession(session, email);
+					RequestSanitizer.removeAllAttributes(request);
+
+					request.getRequestDispatcher("home.jsp").forward(request, response);
+				} else {
+
+					request.getRequestDispatcher("login.html").forward(request, response);
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
 				request.getRequestDispatcher("login.html").forward(request, response);
 			}
-			
-		} catch (SQLException e) {
-			e.printStackTrace();
-			request.getRequestDispatcher("login.html").forward(request, response);
 		}
 	}
 }
