@@ -1,6 +1,8 @@
 package it.unibz.examproject.servlets;
 
 import it.unibz.examproject.db.DatabaseConnection;
+import it.unibz.examproject.db.queries.LoginQuery;
+import it.unibz.examproject.db.queries.Query;
 import it.unibz.examproject.util.Authentication;
 import it.unibz.examproject.util.RequestSanitizer;
 import jakarta.servlet.http.HttpServlet;
@@ -80,12 +82,9 @@ public class LoginServlet extends HttpServlet {
 			 * sql injection: validate inputs
 			 */
 			try (Statement st = conn.createStatement()) {
-				ResultSet sqlRes = st.executeQuery(
-						"SELECT * "
-								+ "FROM [user] "
-								+ "WHERE email='" + email + "' "
-								+ "AND password='" + pwd + "'"
-				);
+				Query query = new LoginQuery(email, pwd);
+
+				ResultSet sqlRes = st.executeQuery(query.getQueryString());
 
 				// valid credentials
 				if (sqlRes.next()) {
@@ -95,6 +94,7 @@ public class LoginServlet extends HttpServlet {
 					request.getRequestDispatcher("home.jsp").forward(request, response);
 				} else {
 
+					RequestSanitizer.removeAllAttributes(request);
 					request.getRequestDispatcher("login.html").forward(request, response);
 				}
 			} catch (SQLException e) {

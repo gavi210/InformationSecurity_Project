@@ -1,6 +1,9 @@
 package it.unibz.examproject.servlets;
 
 import it.unibz.examproject.db.DatabaseConnection;
+import it.unibz.examproject.db.queries.ExistsUserQuery;
+import it.unibz.examproject.db.queries.Query;
+import it.unibz.examproject.db.queries.RegisterQuery;
 import it.unibz.examproject.util.Authentication;
 import it.unibz.examproject.util.RequestSanitizer;
 import jakarta.servlet.http.HttpServlet;
@@ -75,11 +78,8 @@ public class RegisterServlet extends HttpServlet {
 			 * sql injection
 			 */
 			try (Statement st = conn.createStatement()) {
-				ResultSet sqlRes = st.executeQuery(
-						"SELECT * "
-								+ "FROM [user] "
-								+ "WHERE email='" + email + "'"
-				);
+				Query existsUserQuery = new ExistsUserQuery(email);
+				ResultSet sqlRes = st.executeQuery(existsUserQuery.getQueryString());
 
 				if (sqlRes.next()) {
 					response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -88,10 +88,8 @@ public class RegisterServlet extends HttpServlet {
 					response.getWriter().println("</html>");
 				} else {
 					// add new account to database
-					st.execute(
-							"INSERT INTO [user] ( name, surname, email, password ) "
-									+ "VALUES ( '" + name + "', '" + surname + "', '" + email + "', '" + pwd + "' )"
-					);
+					Query registrationQuery = new RegisterQuery(name, surname, email, pwd);
+					st.execute(registrationQuery.getQueryString());
 
 					Authentication.setUserSession(session, email);
 
