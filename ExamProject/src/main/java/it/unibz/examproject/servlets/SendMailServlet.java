@@ -80,6 +80,9 @@ public class SendMailServlet extends HttpServlet {
 			String body = request.getParameter("body").replace("'", "''");
 			String timestamp = new Date(System.currentTimeMillis()).toInstant().toString();
 
+			/**
+			 * sanitize the user data both when received and when shown. Ensure and avoids problems of corruption in between.
+			 */
 			try {
 				Query insertNewEmail = new InsertNewMailQuery(conn, sender, receiver, subject, body, timestamp);
 				insertNewEmail.executeQuery();
