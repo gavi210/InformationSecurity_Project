@@ -37,8 +37,9 @@
 			<input type="submit" name="inbox" value="Inbox">
 			<input type="submit" name="sent" value="Sent">
 		</form>
-		
-		<%= request.getAttribute("content")!=null ? request.getAttribute("content") : "" %>
+
+		<!-- content shown retrieved form the servlet. the servlet filters and encapsulates the data to be shown -->
+		<%= request.getAttribute("content") !=null ? request.getAttribute("content") : "" %>
 	</div>
 </body>
 </html>
