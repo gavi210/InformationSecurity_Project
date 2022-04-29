@@ -5,19 +5,17 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class ExistsUserQuery extends Query {
-
+public class ReceivedEmailsQuery extends Query {
     private String email;
 
-    public ExistsUserQuery(Connection connection, String email) {
-        super(connection);
+    public ReceivedEmailsQuery(Connection conn, String email) {
+        super(conn);
         this.email = email;
     }
 
-    public String getQueryString() {
-        return String.format("SELECT * FROM [user] WHERE email= ?", this.email);
+    private String getQueryString() {
+        return "SELECT * FROM mail WHERE receiver= ? ORDER BY [time] DESC";
     }
-
     @Override
     public ResultSet executeQuery() throws SQLException {
         PreparedStatement p = conn.prepareStatement(this.getQueryString());

@@ -5,17 +5,14 @@ import it.unibz.examproject.db.queries.LoginQuery;
 import it.unibz.examproject.db.queries.Query;
 import it.unibz.examproject.util.Authentication;
 import it.unibz.examproject.util.RequestSanitizer;
+import it.unibz.examproject.util.userinput.EmailValidator;
+import it.unibz.examproject.util.userinput.PasswordValidator;
 import jakarta.servlet.http.HttpServlet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -75,31 +72,39 @@ public class LoginServlet extends HttpServlet {
 		// starts the login sequence
 		else {
 			// later should be validated
-			String email = request.getParameter("email").replace("'", "''");;
-			String pwd = request.getParameter("password").replace("'", "''");;
+			String email = request.getParameter("email");
+			String pwd = request.getParameter("password");
 
-			/**
-			 * sql injection: validate inputs
-			 */
-			try (Statement st = conn.createStatement()) {
-				Query query = new LoginQuery(email, pwd);
+			EmailValidator emailValidator = new EmailValidator(email);
+			PasswordValidator passwordValidator = new PasswordValidator(pwd);
 
-				ResultSet sqlRes = st.executeQuery(query.getQueryString());
+			if(emailValidator.isValid() && passwordValidator.isValid()) {
+				try {
+					Query query = new LoginQuery(conn, email, pwd);
 
-				// valid credentials
-				if (sqlRes.next()) {
-					Authentication.setUserSession(session, email);
-					RequestSanitizer.removeAllAttributes(request);
+					ResultSet sqlRes = query.executeQuery();
 
-					request.getRequestDispatcher("home.jsp").forward(request, response);
-				} else {
+					// valid credentials
+					if (sqlRes.next()) {
+						Authentication.setUserSession(session, email);
+						RequestSanitizer.removeAllAttributes(request);
 
-					RequestSanitizer.removeAllAttributes(request);
+						request.getRequestDispatcher("home.jsp").forward(request, response);
+					} else {
+
+						RequestSanitizer.removeAllAttributes(request);
+						request.getRequestDispatcher("login.html").forward(request, response);
+					}
+				} catch (SQLException e) {
+					e.printStackTrace();
 					request.getRequestDispatcher("login.html").forward(request, response);
 				}
-			} catch (SQLException e) {
-				e.printStackTrace();
-				request.getRequestDispatcher("login.html").forward(request, response);
+			}
+			else {
+				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+				response.getWriter().print("<html><head><title>Check input correctness!</title></head>");
+				response.getWriter().print("<body>Check input correctness!</body>");
+				response.getWriter().println("</html>");
 			}
 		}
 	}

@@ -1,6 +1,9 @@
 package it.unibz.examproject.servlets;
 
 import it.unibz.examproject.db.DatabaseConnection;
+import it.unibz.examproject.db.queries.Query;
+import it.unibz.examproject.db.queries.ReceivedEmailsQuery;
+import it.unibz.examproject.db.queries.SentEmailsQuery;
 import it.unibz.examproject.util.Authentication;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServlet;
@@ -20,6 +23,10 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Entities;
+import org.jsoup.safety.Safelist;
+import org.jsoup.safety.Whitelist;
 
 /**
  * Servlet implementation class NavigationServlet
@@ -65,37 +72,53 @@ public class NavigationServlet extends HttpServlet {
 			response.getWriter().println("</html>");
 		}
 		else {
+			// if here, the email provided was correct and has already been validated. Trust the user: where problems could arise since trusting.
 			Map<String,String> userInfo = (Map<String, String>) session.getAttribute("user");
 			String email = userInfo.get("email");
 
-			// decide the next action based on  input parameters
-			if (request.getParameter("newMail") != null)
-				request.setAttribute("content", getHtmlForNewMail(email));
-			else if (request.getParameter("inbox") != null)
-				request.setAttribute("content", getHtmlForInbox(email));
-			else if (request.getParameter("sent") != null)
-				request.setAttribute("content", getHtmlForSent(email));
+			// change the web page to be shown
+			if (request.getParameter("userAction") != null) {
+				String action = request.getParameter("userAction");
+				if (action.equals("NEW_EMAIL"))
+					request.setAttribute("content", getHtmlForNewMail(email));
+				else if (action.equals("INBOX"))
+					request.setAttribute("content", getHtmlForInbox(email));
+				else if (action.equals("SENT"))
+					request.setAttribute("content", getHtmlForSent(email));
+			}
+			else
+				request.removeAttribute("content");
 
 			request.getRequestDispatcher("home.jsp").forward(request, response);
 		}
 	}
 
+	/**
+	 * provides the html page for the user to read the received emails
+	 * Load the content, decrypt it on the client side with the stored private key
+	 * @param email user email
+	 * @return
+	 */
 	private String getHtmlForInbox(String email) {
-		try (Statement st = conn.createStatement()) {
-			ResultSet sqlRes = st.executeQuery(
-				"SELECT * FROM mail "
-				+ "WHERE receiver='" + email + "'"
-				+ "ORDER BY [time] DESC"
-			);
+		try {
+			Query getReceivedEmailsQuery = new ReceivedEmailsQuery(conn, email);
+			ResultSet sqlRes = getReceivedEmailsQuery.executeQuery();
 			
 			StringBuilder output = new StringBuilder();
 			output.append("<div>\r\n");
-			
+
+			// reading the information from the database: should have already been sanitized: avoid cross-site scripting.
 			while (sqlRes.next()) {
+				String unsafeEmailSubject = sqlRes.getString(3);
+
+				// SafeList.none() only pure text is considered for the application.
+				String safeEmailSubject = Jsoup.clean(unsafeEmailSubject, Safelist.none());
+				// get user inputs
 				output.append("<div style=\"white-space: pre-wrap;\"><span style=\"color:grey;\">");
+				//output.append("FROM:&emsp;" + sqlRes.getString(1) + "&emsp;&emsp;AT:&emsp;" + sqlRes.getString(5));
 				output.append("FROM:&emsp;" + sqlRes.getString(1) + "&emsp;&emsp;AT:&emsp;" + sqlRes.getString(5));
 				output.append("</span>");
-				output.append("<br><b>" + sqlRes.getString(3) + "</b>\r\n");
+				output.append("<br><b>" + safeEmailSubject + "</b>\r\n");
 				output.append("<br>" + sqlRes.getString(4));
 				output.append("</div>\r\n");
 				
@@ -103,7 +126,7 @@ public class NavigationServlet extends HttpServlet {
 			}
 			
 			output.append("</div>");
-			
+
 			return output.toString();
 			
 		} catch (SQLException e) {
@@ -131,13 +154,10 @@ public class NavigationServlet extends HttpServlet {
 	}
 	
 	private String getHtmlForSent(String email) {
-		try (Statement st = conn.createStatement()) {
-			ResultSet sqlRes = st.executeQuery(
-				"SELECT * FROM mail "
-				+ "WHERE sender='" + email + "'"
-				+ "ORDER BY [time] DESC"
-			);
-			
+		try {
+			Query sentEmailsQuery = new SentEmailsQuery(conn, email);
+			ResultSet sqlRes = sentEmailsQuery.executeQuery();
+
 			StringBuilder output = new StringBuilder();
 			output.append("<div>\r\n");
 			
