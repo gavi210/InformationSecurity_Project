@@ -16,6 +16,7 @@ public class ReceivedEmailsQuery extends Query {
     private String getQueryString() {
         return "SELECT * FROM mail WHERE receiver= ? ORDER BY [time] DESC";
     }
+
     @Override
     public ResultSet executeQuery() throws SQLException {
         PreparedStatement p = conn.prepareStatement(this.getQueryString());
