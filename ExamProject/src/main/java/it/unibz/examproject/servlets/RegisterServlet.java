@@ -1,20 +1,17 @@
 package it.unibz.examproject.servlets;
 
-import it.unibz.examproject.db.DatabaseConnection;
-import it.unibz.examproject.db.queries.ExistsUserQuery;
-import it.unibz.examproject.db.queries.Query;
-import it.unibz.examproject.db.queries.RegisterQuery;
+import it.unibz.examproject.util.db.PostgresRepository;
+import it.unibz.examproject.util.db.Repository;
+import it.unibz.examproject.util.db.SQLServerRepository;
 import it.unibz.examproject.util.Authentication;
 import it.unibz.examproject.util.RequestSanitizer;
-import it.unibz.examproject.util.userinput.EmailValidator;
-import it.unibz.examproject.util.userinput.NameSurnameValidator;
-import it.unibz.examproject.util.userinput.PasswordValidator;
+import it.unibz.examproject.util.inputvalidation.EmailAddressValidator;
+import it.unibz.examproject.util.inputvalidation.NameSurnameValidator;
+import it.unibz.examproject.util.inputvalidation.PasswordValidator;
 import jakarta.servlet.http.HttpServlet;
 import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Properties;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -29,7 +26,7 @@ import jakarta.servlet.http.HttpSession;
 public class RegisterServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
     
-	private static Connection conn;
+	private static Repository repository;
 	
     /**
      * @see HttpServlet#HttpServlet()
@@ -40,9 +37,16 @@ public class RegisterServlet extends HttpServlet {
     
     public void init() throws ServletException {
 		try {
-			// configuration put in the web content
-			InputStream dbConnectionProperties = getServletContext().getResourceAsStream("/dbConfig.properties");
-			conn = DatabaseConnection.initializeDatabase(dbConnectionProperties);
+			Properties configProperties = new Properties();
+			configProperties.load(getServletContext().getResourceAsStream("/dbConfig.properties"));
+
+			String dbms = configProperties.getProperty("db.dbms");
+			if("postgres".equals(dbms))
+				repository = new PostgresRepository();
+			else
+				repository = new SQLServerRepository();
+
+			repository.init(configProperties);
 
 		} catch (ClassNotFoundException | SQLException e) {
 			e.printStackTrace();
@@ -63,42 +67,40 @@ public class RegisterServlet extends HttpServlet {
 			response.getWriter().println("</html>");
 		}
 		else {
-			// validate user inputs
+			/**
+			 * sanitize the user data both when received and when shown. Ensure and avoids problems of corruption in between.
+			 */
 			String name = request.getParameter("name"); // since parametrized query, replacement is not needed anymore
 			String surname = request.getParameter("surname");
 			String email = request.getParameter("email");
 			String pwd = request.getParameter("password");
 
+			// once the attributes are loaded, then removed from the object, so to avoid security problems
+			RequestSanitizer.removeAllAttributes(request);
+
 			NameSurnameValidator nameValidator = new NameSurnameValidator(name);
 			NameSurnameValidator surnameValidator = new NameSurnameValidator(surname);
-			EmailValidator emailValidator = new EmailValidator(email);
+			EmailAddressValidator emailAddressValidator = new EmailAddressValidator(email);
 			PasswordValidator passwordValidator = new PasswordValidator(pwd);
 
-			if(nameValidator.isValid() && surnameValidator.isValid() && emailValidator.isValid() && passwordValidator.isValid()) {
-				try {
-					Query existsUserQuery = new ExistsUserQuery(conn, email);
-					ResultSet sqlRes = existsUserQuery.executeQuery();
+			if(nameValidator.isValid() && surnameValidator.isValid() && emailAddressValidator.isValid() && passwordValidator.isValid()) {
+				boolean emailAlreadyInUse = repository.emailAlreadyInUse(email);
 
-					if (sqlRes.next()) {
-						response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-						response.getWriter().print("<html><head><title>Email already in use!</title></head>");
-						response.getWriter().print("<body>Email already in use!</body>");
-						response.getWriter().println("</html>");
-					} else {
-						// add new account to database
-						Query registrationQuery = new RegisterQuery(conn, name, surname, email, pwd);
-						registrationQuery.executeQuery();
+				if (emailAlreadyInUse) {
+					response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+					response.getWriter().print("<html><head><title>Email already in use!</title></head>");
+					response.getWriter().print("<body>Email already in use!</body>");
+					response.getWriter().println("</html>");
 
-						Authentication.setUserSession(session, email);
+					/**
+					 * maybe needed to remove the password parameter from the response page. Just check if it is there
+					 */
+				} else {
+					repository.registerNewUser(name, surname, email, pwd);
 
-						RequestSanitizer.removeAllAttributes(request);
+					Authentication.setUserSession(session, email);
 
-						request.getRequestDispatcher("home.jsp").forward(request, response);
-					}
-
-				} catch (SQLException e) {
-					e.printStackTrace();
-					request.getRequestDispatcher("register.html").forward(request, response);
+					request.getRequestDispatcher("home.jsp").forward(request, response);
 				}
 			}
 			else {

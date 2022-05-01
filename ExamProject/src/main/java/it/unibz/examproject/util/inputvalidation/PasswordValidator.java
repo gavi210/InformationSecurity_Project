@@ -1,4 +1,4 @@
-package it.unibz.examproject.util.userinput;
+package it.unibz.examproject.util.inputvalidation;
 
 public class PasswordValidator extends InputValidator {
     private static int LOWER_BOUND = 1;

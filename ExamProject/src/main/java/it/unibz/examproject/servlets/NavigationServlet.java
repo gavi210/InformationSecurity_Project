@@ -1,32 +1,27 @@
 package it.unibz.examproject.servlets;
 
-import it.unibz.examproject.db.DatabaseConnection;
-import it.unibz.examproject.db.queries.Query;
-import it.unibz.examproject.db.queries.ReceivedEmailsQuery;
-import it.unibz.examproject.db.queries.SentEmailsQuery;
+import it.unibz.examproject.util.RequestSanitizer;
+import it.unibz.examproject.util.db.Email;
+import it.unibz.examproject.util.db.PostgresRepository;
+import it.unibz.examproject.util.db.Repository;
+import it.unibz.examproject.util.db.SQLServerRepository;
 import it.unibz.examproject.util.Authentication;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.http.HttpServlet;
+
 import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Logger;
 
+import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Entities;
 import org.jsoup.safety.Safelist;
-import org.jsoup.safety.Whitelist;
 
 /**
  * Servlet implementation class NavigationServlet
@@ -35,7 +30,7 @@ import org.jsoup.safety.Whitelist;
 public class NavigationServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
     
-	private static Connection conn;
+	private static Repository repository;
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -43,11 +38,18 @@ public class NavigationServlet extends HttpServlet {
         super();
     }
     
-    public void init() throws ServletException {
+    public void init() {
 		try {
-			// configuration put in the web content
-			InputStream dbConnectionProperties = getServletContext().getResourceAsStream("/dbConfig.properties");
-			conn = DatabaseConnection.initializeDatabase(dbConnectionProperties);
+			Properties configProperties = new Properties();
+			configProperties.load(getServletContext().getResourceAsStream("/dbConfig.properties"));
+
+			String dbms = configProperties.getProperty("db.dbms");
+			if("postgres".equals(dbms))
+				repository = new PostgresRepository();
+			else
+				repository = new SQLServerRepository();
+
+			repository.init(configProperties);
 
 		} catch (ClassNotFoundException | SQLException e) {
 			e.printStackTrace();
@@ -62,7 +64,6 @@ public class NavigationServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html");
 
-		// check if the user is logged in
 		HttpSession session = request.getSession(false);
 
 		if(!Authentication.isUserLogged(session)) {
@@ -73,10 +74,11 @@ public class NavigationServlet extends HttpServlet {
 		}
 		else {
 			// if here, the email provided was correct and has already been validated. Trust the user: where problems could arise since trusting.
+			// man-in-the-middle ? request forgery?
 			Map<String,String> userInfo = (Map<String, String>) session.getAttribute("user");
 			String email = userInfo.get("email");
 
-			// change the web page to be shown
+			// dynamically change the web page
 			if (request.getParameter("userAction") != null) {
 				String action = request.getParameter("userAction");
 				if (action.equals("NEW_EMAIL"))
@@ -89,6 +91,10 @@ public class NavigationServlet extends HttpServlet {
 			else
 				request.removeAttribute("content");
 
+			List<String> toBeKept = new ArrayList<>();
+			toBeKept.add("content");
+ 			RequestSanitizer.removeAttributesApartFrom(request, toBeKept);
+
 			request.getRequestDispatcher("home.jsp").forward(request, response);
 		}
 	}
@@ -100,39 +106,43 @@ public class NavigationServlet extends HttpServlet {
 	 * @return
 	 */
 	private String getHtmlForInbox(String email) {
-		try {
-			Query getReceivedEmailsQuery = new ReceivedEmailsQuery(conn, email);
-			ResultSet sqlRes = getReceivedEmailsQuery.executeQuery();
-			
-			StringBuilder output = new StringBuilder();
-			output.append("<div>\r\n");
+		List<Email> inbox = repository.getReceivedEmails(email);
 
-			// reading the information from the database: should have already been sanitized: avoid cross-site scripting.
-			while (sqlRes.next()) {
-				String unsafeEmailSubject = sqlRes.getString(3);
+		StringBuilder output = new StringBuilder();
+		output.append("<div>\r\n");
 
-				// SafeList.none() only pure text is considered for the application.
-				String safeEmailSubject = Jsoup.clean(unsafeEmailSubject, Safelist.none());
-				// get user inputs
-				output.append("<div style=\"white-space: pre-wrap;\"><span style=\"color:grey;\">");
-				//output.append("FROM:&emsp;" + sqlRes.getString(1) + "&emsp;&emsp;AT:&emsp;" + sqlRes.getString(5));
-				output.append("FROM:&emsp;" + sqlRes.getString(1) + "&emsp;&emsp;AT:&emsp;" + sqlRes.getString(5));
-				output.append("</span>");
-				output.append("<br><b>" + safeEmailSubject + "</b>\r\n");
-				output.append("<br>" + sqlRes.getString(4));
-				output.append("</div>\r\n");
-				
-				output.append("<hr style=\"border-top: 2px solid black;\">\r\n");
-			}
-			
-			output.append("</div>");
+		/**
+		 * since reading the information from the database, they have already been sanitized. But could be better to sanitize them any time
+		 */
+		/**
+		 * Validation on Email Subject and Email Content cannot be strict. Therefore, on them, sanitization process before being shown
+		 * Probably apply sanitization as well for the email address and other fields, since they are not supposed to contain any html code
+		 *
+		 * Introduce a Sanitization layer for the Emails being loaded. Once instantiated, invoke the sanitizer on them.
+		 * Limitation: you cannot send HTML code in the email body, since it will be removed by the Jsoup Sanitizer.
+		 * Maybe use an HTML safe sanitizer, to allow sharing only safe HTML.
+		 *
+		 */
+		inbox.stream().forEach(mail -> {
+			String sanitizedSubject = Jsoup.clean(mail.getSubject(), Safelist.none());
+			String sanitizedFromAddress = Jsoup.clean(mail.getSender(), Safelist.none());
+			String sanitizedTimestamp = Jsoup.clean(mail.getTimestamp(), Safelist.none());
+			String sanitizedBody = Jsoup.clean(mail.getBody(), Safelist.none());
 
-			return output.toString();
-			
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return "ERROR IN FETCHING INBOX MAILS!";
-		}
+			// get user inputs
+			output.append("<div style=\"white-space: pre-wrap;\"><span style=\"color:grey;\">");
+			output.append("FROM:&emsp;" + sanitizedFromAddress + "&emsp;&emsp;AT:&emsp;" + sanitizedTimestamp);
+			output.append("</span>");
+			output.append("<br><b>" + sanitizedSubject + "</b>\r\n");
+			output.append("<br>" + sanitizedBody);
+			output.append("</div>\r\n");
+
+			output.append("<hr style=\"border-top: 2px solid black;\">\r\n");
+		});
+
+		output.append("</div>");
+
+		return output.toString();
 	}
 
 	/**
@@ -152,25 +162,29 @@ public class NavigationServlet extends HttpServlet {
 			+ "		<input type=\"submit\" name=\"sent\" value=\"Send\">\r\n"
 			+ "	</form>";
 	}
-	
+
 	private String getHtmlForSent(String email) {
 		try {
-			Query sentEmailsQuery = new SentEmailsQuery(conn, email);
-			ResultSet sqlRes = sentEmailsQuery.executeQuery();
+			List<Email> sent = repository.getSentEmails(email);
 
 			StringBuilder output = new StringBuilder();
 			output.append("<div>\r\n");
-			
-			while (sqlRes.next()) {
+
+			sent.stream().forEach(mail -> {
+				String sanitizedSubject = Jsoup.clean(mail.getSubject(), Safelist.none());
+				String sanitizedReceiver = Jsoup.clean(mail.getReceiver(), Safelist.none());
+				String sanitizedTimestamp = Jsoup.clean(mail.getTimestamp(), Safelist.none());
+				String sanitizedBody = Jsoup.clean(mail.getBody(), Safelist.none());
+
 				output.append("<div style=\"white-space: pre-wrap;\"><span style=\"color:grey;\">");
-				output.append("TO:&emsp;" + sqlRes.getString(2) + "&emsp;&emsp;AT:&emsp;" + sqlRes.getString(5));
+				output.append("TO:&emsp;" + sanitizedReceiver + "&emsp;&emsp;AT:&emsp;" + sanitizedTimestamp);
 				output.append("</span>");
-				output.append("<br><b>" + sqlRes.getString(3) + "</b>\r\n");
-				output.append("<br>" + sqlRes.getString(4));
+				output.append("<br><b>" + sanitizedSubject + "</b>\r\n");
+				output.append("<br>" + sanitizedBody);
 				output.append("</div>\r\n");
-				
+
 				output.append("<hr style=\"border-top: 2px solid black;\">\r\n");
-			}
+			});
 			
 			output.append("</div>");
 			

@@ -1,18 +1,16 @@
 package it.unibz.examproject.servlets;
 
-import it.unibz.examproject.db.DatabaseConnection;
-import it.unibz.examproject.db.queries.LoginQuery;
-import it.unibz.examproject.db.queries.Query;
+import it.unibz.examproject.util.db.PostgresRepository;
+import it.unibz.examproject.util.db.Repository;
+import it.unibz.examproject.util.db.SQLServerRepository;
 import it.unibz.examproject.util.Authentication;
 import it.unibz.examproject.util.RequestSanitizer;
-import it.unibz.examproject.util.userinput.EmailValidator;
-import it.unibz.examproject.util.userinput.PasswordValidator;
+import it.unibz.examproject.util.inputvalidation.EmailAddressValidator;
+import it.unibz.examproject.util.inputvalidation.PasswordValidator;
 import jakarta.servlet.http.HttpServlet;
 import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Properties;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -24,7 +22,7 @@ import jakarta.servlet.http.HttpSession;
 public class LoginServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
-	private static Connection conn;
+	private static Repository repository;
 
 	/**
      * @see HttpServlet#HttpServlet()
@@ -33,14 +31,18 @@ public class LoginServlet extends HttpServlet {
         super();
     }
 
-	/**
-	 * set up the connection with the database
-	 */
     public void init() {
     	try {
-			// configuration put in the web content
-			InputStream dbConnectionProperties = getServletContext().getResourceAsStream("/dbConfig.properties");
-			conn = DatabaseConnection.initializeDatabase(dbConnectionProperties);
+			Properties configProperties = new Properties();
+			configProperties.load(getServletContext().getResourceAsStream("/dbConfig.properties"));
+
+			String dbms = configProperties.getProperty("db.dbms");
+			if("postgres".equals(dbms))
+				repository = new PostgresRepository();
+			else
+				repository = new SQLServerRepository();
+
+			repository.init(configProperties);
     	
     	} catch (ClassNotFoundException | SQLException e) {
 			e.printStackTrace();
@@ -71,32 +73,25 @@ public class LoginServlet extends HttpServlet {
 
 		// starts the login sequence
 		else {
-			// later should be validated
+
+			/**
+			 * here should introduce input validation
+			 */
 			String email = request.getParameter("email");
 			String pwd = request.getParameter("password");
 
-			EmailValidator emailValidator = new EmailValidator(email);
+			EmailAddressValidator emailAddressValidator = new EmailAddressValidator(email);
 			PasswordValidator passwordValidator = new PasswordValidator(pwd);
 
-			if(emailValidator.isValid() && passwordValidator.isValid()) {
-				try {
-					Query query = new LoginQuery(conn, email, pwd);
+			if(emailAddressValidator.isValid() && passwordValidator.isValid()) {
+				if (repository.areCredentialsValid(email, pwd)) {
+					Authentication.setUserSession(session, email);
+					RequestSanitizer.removeAllAttributes(request);
 
-					ResultSet sqlRes = query.executeQuery();
+					request.getRequestDispatcher("home.jsp").forward(request, response);
+				} else {
 
-					// valid credentials
-					if (sqlRes.next()) {
-						Authentication.setUserSession(session, email);
-						RequestSanitizer.removeAllAttributes(request);
-
-						request.getRequestDispatcher("home.jsp").forward(request, response);
-					} else {
-
-						RequestSanitizer.removeAllAttributes(request);
-						request.getRequestDispatcher("login.html").forward(request, response);
-					}
-				} catch (SQLException e) {
-					e.printStackTrace();
+					RequestSanitizer.removeAllAttributes(request);
 					request.getRequestDispatcher("login.html").forward(request, response);
 				}
 			}

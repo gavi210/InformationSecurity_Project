@@ -1,4 +1,4 @@
-package it.unibz.examproject.util.userinput;
+package it.unibz.examproject.util.inputvalidation;
 
 /**
  * for names and surnames, characters with accents cannot be used.

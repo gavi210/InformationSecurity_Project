@@ -1,19 +1,18 @@
 package it.unibz.examproject.servlets;
 
-import it.unibz.examproject.db.DatabaseConnection;
-import it.unibz.examproject.db.queries.InsertNewMailQuery;
-import it.unibz.examproject.db.queries.Query;
+import it.unibz.examproject.util.db.PostgresRepository;
+import it.unibz.examproject.util.db.Repository;
+import it.unibz.examproject.util.db.SQLServerRepository;
+import it.unibz.examproject.util.db.queries.InsertNewMailQuery;
+import it.unibz.examproject.util.db.queries.Query;
 import it.unibz.examproject.util.Authentication;
 import it.unibz.examproject.util.RequestSanitizer;
 import jakarta.servlet.http.HttpServlet;
 import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Date;
 import java.util.Map;
+import java.util.Properties;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -28,21 +27,25 @@ import jakarta.servlet.http.HttpSession;
 public class SendMailServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
     
-	private static Connection conn;
+	private static Repository repository;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public SendMailServlet() {
-        super();
-        // TODO Auto-generated constructor stub
-    }
+    public SendMailServlet() {}
     
     public void init() throws ServletException {
 		try {
-			// configuration put in the web content
-			InputStream dbConnectionProperties = getServletContext().getResourceAsStream("/dbConfig.properties");
-			conn = DatabaseConnection.initializeDatabase(dbConnectionProperties);
+			Properties configProperties = new Properties();
+			configProperties.load(getServletContext().getResourceAsStream("/dbConfig.properties"));
+
+			String dbms = configProperties.getProperty("db.dbms");
+			if("postgres".equals(dbms))
+				repository = new PostgresRepository();
+			else
+				repository = new SQLServerRepository();
+
+			repository.init(configProperties);
 
 		} catch (ClassNotFoundException | SQLException e) {
 			e.printStackTrace();
@@ -70,26 +73,21 @@ public class SendMailServlet extends HttpServlet {
 			response.getWriter().println("</html>");
 		}
 		else {
-			// validate user info
-			// retrieved from the current session
-			Map<String, String> userInfo = (Map<String, String>) session.getAttribute("user");
-			String sender = userInfo.get("email");
-
-			String receiver = request.getParameter("receiver").replace("'", "''");
-			String subject = request.getParameter("subject").replace("'", "''");
-			String body = request.getParameter("body").replace("'", "''");
-			String timestamp = new Date(System.currentTimeMillis()).toInstant().toString();
-
+			/**
+			 * validate user provided information (since could be encrypted (harmless) or plain text: malicious code)
+			 */
 			/**
 			 * sanitize the user data both when received and when shown. Ensure and avoids problems of corruption in between.
 			 */
-			try {
-				Query insertNewEmail = new InsertNewMailQuery(conn, sender, receiver, subject, body, timestamp);
-				insertNewEmail.executeQuery();
+			Map<String, String> userInfo = (Map<String, String>) session.getAttribute("user");
+			String sender = userInfo.get("email");
 
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+			String receiver = request.getParameter("receiver");
+			String subject = request.getParameter("subject");
+			String body = request.getParameter("body");
+			String timestamp = new Date(System.currentTimeMillis()).toInstant().toString();
+
+			repository.sendNewMail(sender, receiver, subject, body, timestamp);
 
 			RequestSanitizer.removeAllAttributes(request);
 			request.getRequestDispatcher("home.jsp").forward(request, response);
