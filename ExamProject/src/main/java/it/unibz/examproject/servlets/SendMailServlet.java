@@ -1,24 +1,22 @@
 package it.unibz.examproject.servlets;
 
+import it.unibz.examproject.util.Authentication;
+import it.unibz.examproject.util.RequestSanitizer;
 import it.unibz.examproject.util.db.PostgresRepository;
 import it.unibz.examproject.util.db.Repository;
 import it.unibz.examproject.util.db.SQLServerRepository;
-import it.unibz.examproject.util.db.queries.InsertNewMailQuery;
-import it.unibz.examproject.util.db.queries.Query;
-import it.unibz.examproject.util.Authentication;
-import it.unibz.examproject.util.RequestSanitizer;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
-
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 /**
  * Servlet implementation class SendMailServlet

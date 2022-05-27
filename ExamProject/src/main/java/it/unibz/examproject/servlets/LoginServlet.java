@@ -44,9 +44,7 @@ public class LoginServlet extends HttpServlet {
 
 			repository.init(configProperties);
     	
-    	} catch (ClassNotFoundException | SQLException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
+    	} catch (ClassNotFoundException | SQLException | IOException e) {
 			e.printStackTrace();
 		}
 	}
