@@ -6,8 +6,9 @@ import it.unibz.examproject.util.db.SQLServerRepository;
 import it.unibz.examproject.util.Authentication;
 import it.unibz.examproject.util.RequestSanitizer;
 import it.unibz.examproject.util.inputvalidation.EmailAddressValidator;
-import it.unibz.examproject.util.inputvalidation.PasswordValidator;
+import it.unibz.examproject.util.inputvalidation.PasswordComplexityValidator;
 import jakarta.servlet.http.HttpServlet;
+
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -20,11 +21,11 @@ import jakarta.servlet.http.HttpSession;
 
 @WebServlet("/LoginServlet")
 public class LoginServlet extends HttpServlet {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	private static Repository repository;
+    private static Repository repository;
 
-	/**
+    /**
      * @see HttpServlet#HttpServlet()
      */
     public LoginServlet() {
@@ -32,73 +33,73 @@ public class LoginServlet extends HttpServlet {
     }
 
     public void init() {
-    	try {
-			Properties configProperties = new Properties();
-			configProperties.load(getServletContext().getResourceAsStream("/dbConfig.properties"));
+        try {
+            Properties configProperties = new Properties();
+            configProperties.load(getServletContext().getResourceAsStream("/dbConfig.properties"));
 
-			String dbms = configProperties.getProperty("db.dbms");
-			if("postgres".equals(dbms))
-				repository = new PostgresRepository();
-			else
-				repository = new SQLServerRepository();
+            String dbms = configProperties.getProperty("db.dbms");
+            if ("postgres".equals(dbms))
+                repository = new PostgresRepository();
+            else
+                repository = new SQLServerRepository();
 
-			repository.init(configProperties);
-    	
-    	} catch (ClassNotFoundException | SQLException | IOException e) {
-			e.printStackTrace();
-		}
-	}
+            repository.init(configProperties);
 
-	/**
-	 * onPost
-	 * @param request
-	 * @param response
-	 * @throws ServletException
-	 * @throws IOException
-	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		response.setContentType("text/html");
+        } catch (ClassNotFoundException | SQLException | IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-		// if user logged in, DROP the request
-		HttpSession session = request.getSession();
+    /**
+     * onPost
+     *
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException
+     */
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        response.setContentType("text/html");
 
-		if (Authentication.isUserLogged(session)) {
-			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-			response.getWriter().print("<html><head><title>User already logged in!</title></head>");
-			response.getWriter().print("<body>User already logged in!</body>");
-			response.getWriter().println("</html>");
-		}
+        // if user logged in, DROP the request
+        HttpSession session = request.getSession();
 
-		// starts the login sequence
-		else {
+        if (Authentication.isUserLogged(session)) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().print("<html><head><title>User already logged in!</title></head>");
+            response.getWriter().print("<body>User already logged in!</body>");
+            response.getWriter().println("</html>");
+        }
 
-			/**
-			 * here should introduce input validation
-			 */
-			String email = request.getParameter("email");
-			String pwd = request.getParameter("password");
+        // starts the login sequence
+        else {
 
-			EmailAddressValidator emailAddressValidator = new EmailAddressValidator(email);
-			PasswordValidator passwordValidator = new PasswordValidator(pwd);
+            /**
+             * here should introduce input validation
+             */
+            String email = request.getParameter("email");
+            String pwd = request.getParameter("password");
 
-			if(emailAddressValidator.isValid() && passwordValidator.isValid()) {
-				if (repository.areCredentialsValid(email, pwd)) {
-					Authentication.setUserSession(session, email);
-					RequestSanitizer.removeAllAttributes(request);
+            EmailAddressValidator emailAddressValidator = new EmailAddressValidator(email);
+            PasswordComplexityValidator passwordValidator = new PasswordComplexityValidator(pwd);
 
-					request.getRequestDispatcher("home.jsp").forward(request, response);
-				} else {
+            if (emailAddressValidator.isValid() && passwordValidator.isValid()) {
+                if (repository.areCredentialsValid(email, pwd)) {
+                    Authentication.setUserSession(session, email);
+                    RequestSanitizer.removeAllAttributes(request);
 
-					RequestSanitizer.removeAllAttributes(request);
-					request.getRequestDispatcher("login.html").forward(request, response);
-				}
-			}
-			else {
-				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-				response.getWriter().print("<html><head><title>Check input correctness!</title></head>");
-				response.getWriter().print("<body>Check input correctness!</body>");
-				response.getWriter().println("</html>");
-			}
-		}
-	}
+                    request.getRequestDispatcher("home.jsp").forward(request, response);
+                } else {
+
+                    RequestSanitizer.removeAllAttributes(request);
+                    request.getRequestDispatcher("login.html").forward(request, response);
+                }
+            } else {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().print("<html><head><title>Check input correctness!</title></head>");
+                response.getWriter().print("<body>Check input correctness!</body>");
+                response.getWriter().println("</html>");
+            }
+        }
+    }
 }
