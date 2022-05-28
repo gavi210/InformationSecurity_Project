@@ -1,5 +1,7 @@
 package it.unibz.examproject.util.db;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.sql.*;
 import java.util.*;
 
@@ -8,8 +10,12 @@ public abstract class Repository {
     private Properties connectionProperties;
     protected Connection connection;
 
+    private static PasswordSecurity passwordSecurity;
+
+
     /**
      * set up the database connection. Should be the first method invoked before any other interaction with the repository
+     *
      * @param connectionProperties should contain the driver to be used, the username and password and the connection URL
      * @throws SQLException
      * @throws ClassNotFoundException
@@ -43,15 +49,20 @@ public abstract class Repository {
      */
 
     protected abstract String getExistsUserByEmailQueryString();
+
     protected abstract String getAreCredentialsValidQueryString();
+
     protected abstract String getSendEmailQueryString();
+
     protected abstract String getIncomingEmailsQueryString();
+
     protected abstract String getRegisterNewUserQueryString();
+
     protected abstract String getSentEmailsQueryString();
 
     public boolean emailAlreadyInUse(String email) {
         String sql = getExistsUserByEmailQueryString();
-        try (PreparedStatement p = connection.prepareStatement(sql)){
+        try (PreparedStatement p = connection.prepareStatement(sql)) {
             p.setString(1, email);
             ResultSet res = p.executeQuery();
 
@@ -64,11 +75,11 @@ public abstract class Repository {
 
     public boolean areCredentialsValid(String email, String password) {
         String sql = getAreCredentialsValidQueryString();
-        try (PreparedStatement p = connection.prepareStatement(sql)){
+
+        try (PreparedStatement p = connection.prepareStatement(sql)) {
             p.setString(1, email);
             p.setString(2, password);
             ResultSet res = p.executeQuery();
-
             return res.next();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -78,8 +89,7 @@ public abstract class Repository {
 
     public void sendNewMail(String sender, String receiver, String subject, String body, String timestamp) {
         String sql = getSendEmailQueryString();
-
-        try (PreparedStatement p = connection.prepareStatement(sql)){
+        try (PreparedStatement p = connection.prepareStatement(sql)) {
             p.setString(1, sender);
             p.setString(2, receiver);
             p.setString(3, subject);
@@ -101,8 +111,7 @@ public abstract class Repository {
 
     public void registerNewUser(String name, String surname, String email, String password) {
         String sql = getRegisterNewUserQueryString();
-
-        try (PreparedStatement p = connection.prepareStatement(sql)){
+        try (PreparedStatement p = connection.prepareStatement(sql)) {
             p.setString(1, name);
             p.setString(2, surname);
             p.setString(3, email);
@@ -125,7 +134,7 @@ public abstract class Repository {
             p.setString(1, email);
 
             ResultSet res = p.executeQuery();
-            while(res.next()) {
+            while (res.next()) {
                 String sender = res.getString(1);
                 String receiver = res.getString(2);
                 String subject = res.getString(3);

@@ -24,14 +24,14 @@ import java.util.Properties;
 @WebServlet("/SendMailServlet")
 public class SendMailServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-    
+
 	private static Repository repository;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
     public SendMailServlet() {}
-    
+
     public void init() throws ServletException {
 		try {
 			Properties configProperties = new Properties();
@@ -45,9 +45,7 @@ public class SendMailServlet extends HttpServlet {
 
 			repository.init(configProperties);
 
-		} catch (ClassNotFoundException | SQLException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
+		} catch (ClassNotFoundException | SQLException | IOException e) {
 			e.printStackTrace();
 		}
     }

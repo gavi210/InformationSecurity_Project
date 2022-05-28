@@ -87,10 +87,8 @@ public class LoginServlet extends HttpServlet {
                 if (repository.areCredentialsValid(email, pwd)) {
                     Authentication.setUserSession(session, email);
                     RequestSanitizer.removeAllAttributes(request);
-
                     request.getRequestDispatcher("home.jsp").forward(request, response);
                 } else {
-
                     RequestSanitizer.removeAllAttributes(request);
                     request.getRequestDispatcher("login.html").forward(request, response);
                 }

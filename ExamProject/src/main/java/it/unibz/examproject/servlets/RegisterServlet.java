@@ -1,5 +1,6 @@
 package it.unibz.examproject.servlets;
 
+import it.unibz.examproject.util.db.PasswordSecurity;
 import it.unibz.examproject.util.db.PostgresRepository;
 import it.unibz.examproject.util.db.Repository;
 import it.unibz.examproject.util.db.SQLServerRepository;
@@ -29,6 +30,8 @@ public class RegisterServlet extends HttpServlet {
 
     private static Repository repository;
 
+
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -36,7 +39,7 @@ public class RegisterServlet extends HttpServlet {
         super();
     }
 
-    public void init() throws ServletException {
+    public void init() {
         try {
             Properties configProperties = new Properties();
             configProperties.load(getServletContext().getResourceAsStream("/dbConfig.properties"));
@@ -49,9 +52,7 @@ public class RegisterServlet extends HttpServlet {
 
             repository.init(configProperties);
 
-        } catch (ClassNotFoundException | SQLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (ClassNotFoundException | SQLException | IOException e) {
             e.printStackTrace();
         }
     }
