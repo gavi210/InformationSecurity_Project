@@ -70,7 +70,7 @@ public class LoginServlet extends HttpServlet {
 			
 			if (sqlRes.next()) {
 				// 3: column index for the email in the table
-				request.setAttribute("email", sqlRes.getString(3));
+				request.setAttribute("email", email);
 
 				// 4: column index for the password in the table - ? why should it be returned the user? it has already prompted the password and knows it
 				request.setAttribute("password", sqlRes.getString(4));
