@@ -6,7 +6,7 @@ import it.unibz.examproject.util.db.SQLServerRepository;
 import it.unibz.examproject.util.Authentication;
 import it.unibz.examproject.util.RequestSanitizer;
 import it.unibz.examproject.util.inputvalidation.EmailAddressValidator;
-import it.unibz.examproject.util.inputvalidation.PasswordValidator;
+import it.unibz.examproject.util.inputvalidation.PasswordComplexityValidator;
 import jakarta.servlet.http.HttpServlet;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -43,7 +43,7 @@ public class LoginServlet extends HttpServlet {
 				repository = new SQLServerRepository();
 
 			repository.init(configProperties);
-    	
+
     	} catch (ClassNotFoundException | SQLException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -81,9 +81,9 @@ public class LoginServlet extends HttpServlet {
 			String pwd = request.getParameter("password");
 
 			EmailAddressValidator emailAddressValidator = new EmailAddressValidator(email);
-			PasswordValidator passwordValidator = new PasswordValidator(pwd);
+			PasswordComplexityValidator passwordComplexityValidator = new PasswordComplexityValidator(pwd);
 
-			if(emailAddressValidator.isValid() && passwordValidator.isValid()) {
+			if(emailAddressValidator.isValid() && passwordComplexityValidator.isValid()) {
 				if (repository.areCredentialsValid(email, pwd)) {
 					Authentication.setUserSession(session, email);
 					RequestSanitizer.removeAllAttributes(request);

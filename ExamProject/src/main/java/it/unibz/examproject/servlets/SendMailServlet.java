@@ -3,8 +3,8 @@ package it.unibz.examproject.servlets;
 import it.unibz.examproject.util.db.PostgresRepository;
 import it.unibz.examproject.util.db.Repository;
 import it.unibz.examproject.util.db.SQLServerRepository;
-import it.unibz.examproject.util.db.queries.InsertNewMailQuery;
-import it.unibz.examproject.util.db.queries.Query;
+//import it.unibz.examproject.util.db.queries.InsertNewMailQuery;
+//import it.unibz.examproject.util.db.queries.Query;
 import it.unibz.examproject.util.Authentication;
 import it.unibz.examproject.util.RequestSanitizer;
 import jakarta.servlet.http.HttpServlet;
@@ -26,15 +26,15 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet("/SendMailServlet")
 public class SendMailServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-    
+
 	private static Repository repository;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
     public SendMailServlet() {}
-    
-    public void init() throws ServletException {
+
+    public void init() {
 		try {
 			Properties configProperties = new Properties();
 			configProperties.load(getServletContext().getResourceAsStream("/dbConfig.properties"));
@@ -47,9 +47,7 @@ public class SendMailServlet extends HttpServlet {
 
 			repository.init(configProperties);
 
-		} catch (ClassNotFoundException | SQLException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
+		} catch (ClassNotFoundException | SQLException | IOException e) {
 			e.printStackTrace();
 		}
     }

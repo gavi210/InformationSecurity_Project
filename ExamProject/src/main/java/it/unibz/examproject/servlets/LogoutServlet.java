@@ -13,33 +13,34 @@ import java.io.IOException;
 
 @WebServlet("/LogoutServlet")
 public class LogoutServlet extends HttpServlet {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	/**
+    /**
      * @see HttpServlet#HttpServlet()
      */
     public LogoutServlet() {
         super();
     }
 
-	/**
-	 * onPost
-	 * @param request
-	 * @param response
-	 * @throws ServletException
-	 * @throws IOException
-	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		response.setContentType("text/html");
+    /**
+     * onPost
+     *
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException
+     */
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        response.setContentType("text/html");
 
-		// getSession(false): it does not create a new session if the current on does not exist
-		HttpSession session = request.getSession(false);
+        // getSession(false): it does not create a new session if the current on does not exist
+        HttpSession session = request.getSession(false);
 
-		Authentication.removeUserSession(session);
+        Authentication.removeUserSession(session);
 
-		RequestSanitizer.removeAllAttributes(request);
+        RequestSanitizer.removeAllAttributes(request);
 
-		request.getRequestDispatcher("login.html").forward(request, response);
+        request.getRequestDispatcher("login.html").forward(request, response);
 
-	}
+    }
 }

@@ -29,7 +29,7 @@ import org.jsoup.safety.Safelist;
 @WebServlet("/NavigationServlet")
 public class NavigationServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-    
+
 	private static Repository repository;
     /**
      * @see HttpServlet#HttpServlet()
@@ -37,7 +37,7 @@ public class NavigationServlet extends HttpServlet {
     public NavigationServlet() {
         super();
     }
-    
+
     public void init() {
 		try {
 			Properties configProperties = new Properties();
@@ -123,7 +123,7 @@ public class NavigationServlet extends HttpServlet {
 		 * Maybe use an HTML safe sanitizer, to allow sharing only safe HTML.
 		 *
 		 */
-		inbox.stream().forEach(mail -> {
+		inbox.forEach(mail -> {
 			String sanitizedSubject = Jsoup.clean(mail.getSubject(), Safelist.none());
 			String sanitizedFromAddress = Jsoup.clean(mail.getSender(), Safelist.none());
 			String sanitizedTimestamp = Jsoup.clean(mail.getTimestamp(), Safelist.none());
@@ -131,10 +131,10 @@ public class NavigationServlet extends HttpServlet {
 
 			// get user inputs
 			output.append("<div style=\"white-space: pre-wrap;\"><span style=\"color:grey;\">");
-			output.append("FROM:&emsp;" + sanitizedFromAddress + "&emsp;&emsp;AT:&emsp;" + sanitizedTimestamp);
+			output.append("FROM:&emsp;").append(sanitizedFromAddress).append("&emsp;&emsp;AT:&emsp;").append(sanitizedTimestamp);
 			output.append("</span>");
-			output.append("<br><b>" + sanitizedSubject + "</b>\r\n");
-			output.append("<br>" + sanitizedBody);
+			output.append("<br><b>").append(sanitizedSubject).append("</b>\r\n");
+			output.append("<br>").append(sanitizedBody);
 			output.append("</div>\r\n");
 
 			output.append("<hr style=\"border-top: 2px solid black;\">\r\n");
@@ -153,7 +153,7 @@ public class NavigationServlet extends HttpServlet {
 	 * @return
 	 */
 	private String getHtmlForNewMail(String email) {
-		return 
+		return
 			"<form id=\"submitForm\" class=\"form-resize\" action=\"SendMailServlet\" method=\"post\">\r\n"
 			+ "		<input type=\"hidden\" name=\"email\" value=\""+email+"\">\r\n"
 			+ "		<input class=\"single-row-input\" type=\"email\" name=\"receiver\" placeholder=\"Receiver\" required>\r\n"
@@ -170,26 +170,26 @@ public class NavigationServlet extends HttpServlet {
 			StringBuilder output = new StringBuilder();
 			output.append("<div>\r\n");
 
-			sent.stream().forEach(mail -> {
+			sent.forEach(mail -> {
 				String sanitizedSubject = Jsoup.clean(mail.getSubject(), Safelist.none());
 				String sanitizedReceiver = Jsoup.clean(mail.getReceiver(), Safelist.none());
 				String sanitizedTimestamp = Jsoup.clean(mail.getTimestamp(), Safelist.none());
 				String sanitizedBody = Jsoup.clean(mail.getBody(), Safelist.none());
 
 				output.append("<div style=\"white-space: pre-wrap;\"><span style=\"color:grey;\">");
-				output.append("TO:&emsp;" + sanitizedReceiver + "&emsp;&emsp;AT:&emsp;" + sanitizedTimestamp);
+				output.append("TO:&emsp;").append(sanitizedReceiver).append("&emsp;&emsp;AT:&emsp;").append(sanitizedTimestamp);
 				output.append("</span>");
-				output.append("<br><b>" + sanitizedSubject + "</b>\r\n");
-				output.append("<br>" + sanitizedBody);
+				output.append("<br><b>").append(sanitizedSubject).append("</b>\r\n");
+				output.append("<br>").append(sanitizedBody);
 				output.append("</div>\r\n");
 
 				output.append("<hr style=\"border-top: 2px solid black;\">\r\n");
 			});
-			
+
 			output.append("</div>");
-			
+
 			return output.toString();
-			
+
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return "ERROR IN FETCHING INBOX MAILS!";

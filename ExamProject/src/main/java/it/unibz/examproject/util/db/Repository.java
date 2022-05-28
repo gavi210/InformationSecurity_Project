@@ -64,7 +64,7 @@ public abstract class Repository {
 
     public boolean areCredentialsValid(String email, String password) {
         String sql = getAreCredentialsValidQueryString();
-        try (PreparedStatement p = connection.prepareStatement(sql);){
+        try (PreparedStatement p = connection.prepareStatement(sql)){
             p.setString(1, email);
             p.setString(2, password);
             ResultSet res = p.executeQuery();
