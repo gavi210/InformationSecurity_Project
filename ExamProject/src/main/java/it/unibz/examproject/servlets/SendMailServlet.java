@@ -54,10 +54,10 @@ public class SendMailServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html");
 		
-		String sender = request.getParameter("email").replace("'", "''");;
-		String receiver = request.getParameter("receiver").replace("'", "''");;
-		String subject = request.getParameter("subject").replace("'", "''");;
-		String body = request.getParameter("body").replace("'", "''");;
+		String sender = request.getParameter("email");
+		String receiver = request.getParameter("receiver");
+		String subject = request.getParameter("subject");
+		String body = request.getParameter("body");
 		String timestamp = new Date(System.currentTimeMillis()).toInstant().toString();
 		
 		try (Statement st = conn.createStatement()) {
