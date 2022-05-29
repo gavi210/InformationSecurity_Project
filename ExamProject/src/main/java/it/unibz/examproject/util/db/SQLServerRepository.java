@@ -8,7 +8,7 @@ public class SQLServerRepository extends Repository{
 
     @Override
     protected String getAreCredentialsValidQueryString() {
-        return "SELECT * FROM [user] WHERE email= ? AND password= ?";
+        return "SELECT password FROM [user] WHERE email= ?";
     }
 
     @Override

@@ -83,8 +83,14 @@ public abstract class Repository {
             p.setString(1, email);
             p.setString(2, password);
             ResultSet res = p.executeQuery();
-            return res.next();
-        } catch (SQLException | NoSuchAlgorithmException | InvalidKeySpecException e) {
+
+            if (!res.next())
+                return false;
+
+            String referencePassword = res.getString(1);
+            PasswordSecurity passwordSecurity = new PasswordSecurity();
+            return passwordSecurity.validatePassword(password, referencePassword);
+        } catch (SQLException | NoSuchAlgorithmException | InvalidKeySpecException | DecoderException e) {
             e.printStackTrace();
             return false;
         }
@@ -118,9 +124,9 @@ public abstract class Repository {
             p.setString(1, name);
             p.setString(2, surname);
             p.setString(3, email);
-            p.setString(4, password);
+            p.setString(4, new PasswordSecurity().createHash(password));
             p.execute();
-        } catch (SQLException e) {
+        } catch (SQLException | InvalidKeySpecException | NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
     }
