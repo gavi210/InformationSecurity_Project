@@ -87,8 +87,8 @@ public abstract class Repository {
             if (!res.next())
                 return false;
 
-            String referencePassword = res.getString(1);
-            return this.passwordSecurity.validatePassword(password, referencePassword);
+            String hashedPassword = res.getString(1);
+            return this.passwordSecurity.validatePassword(password, hashedPassword);
         } catch (SQLException | NoSuchAlgorithmException | InvalidKeySpecException | DecoderException e) {
             e.printStackTrace();
             return false;
