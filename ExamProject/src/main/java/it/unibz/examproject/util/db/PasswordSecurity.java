@@ -38,7 +38,7 @@ public class PasswordSecurity {
             throws NoSuchAlgorithmException, InvalidKeySpecException {
         char[] passwordToChar = password.toCharArray();
 
-        SecureRandom random = new SecureRandom();
+        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
         byte[] salt = new byte[SALT_BYTES];
         random.nextBytes(salt);
         byte[] hash = hashPassword(passwordToChar, salt);
@@ -59,7 +59,6 @@ public class PasswordSecurity {
         String[] hashes = hashPassword.split("&");
         byte[] salt = decodeHexString(hashes[0]);
         byte[] hash = decodeHexString(hashes[1]);
-
         byte[] testHash = hashPassword(passwordToChar, salt);
         return byteEquals(hash, testHash);
     }
@@ -105,4 +104,28 @@ public class PasswordSecurity {
         return Hex.decodeHex(hexString.toCharArray());
     }
 
+    public static void main(String[] args) {
+        try {
+            PasswordSecurity passwordSecurity = new PasswordSecurity();
+            String password = "adwoa";
+            String wrongPassword = "adwoa1";
+            String hash = passwordSecurity.createHash(password);
+            String secondHash = passwordSecurity.createHash(password);
+            System.out.println(hash);
+            System.out.println(secondHash);
+            if (passwordSecurity.validatePassword(wrongPassword, hash)) {
+                System.out.println("FAILURE: WRONG PASSWORD ACCEPTED!");
+            }
+            if (passwordSecurity.validatePassword(password, secondHash)) {
+                System.out.println("PASSED");
+            } else
+                System.out.println("FAILURE: PASSWORD NOT ACCEPTED!");
+
+        } catch (Exception ex) {
+            System.out.println("ERROR: " + ex);
+        }
+    }
+
 }
+
+

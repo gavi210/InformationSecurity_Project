@@ -1,5 +1,7 @@
 package it.unibz.examproject.util.db;
 
+import org.apache.commons.codec.DecoderException;
+
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.sql.*;
@@ -77,11 +79,12 @@ public abstract class Repository {
         String sql = getAreCredentialsValidQueryString();
 
         try (PreparedStatement p = connection.prepareStatement(sql)) {
+            String pwdHash = passwordSecurity.createHash(password);
             p.setString(1, email);
             p.setString(2, password);
             ResultSet res = p.executeQuery();
             return res.next();
-        } catch (SQLException e) {
+        } catch (SQLException | NoSuchAlgorithmException | InvalidKeySpecException e) {
             e.printStackTrace();
             return false;
         }
