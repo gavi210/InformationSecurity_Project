@@ -8,7 +8,7 @@ public class PostgresRepository extends Repository {
     }
 
     @Override
-    protected String getAreCredentialsValidQueryString() {
+    protected String getPasswordGivenEmailQueryString() {
         return "SELECT password FROM \"user\" WHERE email= ?";
     }
 

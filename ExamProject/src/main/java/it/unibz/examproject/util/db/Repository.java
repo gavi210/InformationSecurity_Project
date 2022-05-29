@@ -52,7 +52,7 @@ public abstract class Repository {
 
     protected abstract String getExistsUserByEmailQueryString();
 
-    protected abstract String getAreCredentialsValidQueryString();
+    protected abstract String getPasswordGivenEmailQueryString();
 
     protected abstract String getSendEmailQueryString();
 
@@ -76,7 +76,7 @@ public abstract class Repository {
     }
 
     public boolean areCredentialsValid(String email, String password) {
-        String sql = getAreCredentialsValidQueryString();
+        String sql = getPasswordGivenEmailQueryString();
 
         try (PreparedStatement p = connection.prepareStatement(sql)) {
             String pwdHash = passwordSecurity.createHash(password);
