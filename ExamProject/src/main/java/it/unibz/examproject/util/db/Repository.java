@@ -11,8 +11,7 @@ public abstract class Repository {
 
     private Properties connectionProperties;
     protected Connection connection;
-
-    private static PasswordSecurity passwordSecurity;
+    private PasswordSecurity passwordSecurity;
 
 
     /**
@@ -25,6 +24,7 @@ public abstract class Repository {
     public void init(Properties connectionProperties) throws SQLException, ClassNotFoundException {
         this.connectionProperties = connectionProperties;
         this.connection = getConnection();
+        this.passwordSecurity = new PasswordSecurity();
     }
 
     /**
@@ -88,8 +88,7 @@ public abstract class Repository {
                 return false;
 
             String referencePassword = res.getString(1);
-            PasswordSecurity passwordSecurity = new PasswordSecurity();
-            return passwordSecurity.validatePassword(password, referencePassword);
+            return this.passwordSecurity.validatePassword(password, referencePassword);
         } catch (SQLException | NoSuchAlgorithmException | InvalidKeySpecException | DecoderException e) {
             e.printStackTrace();
             return false;
@@ -124,7 +123,7 @@ public abstract class Repository {
             p.setString(1, name);
             p.setString(2, surname);
             p.setString(3, email);
-            p.setString(4, new PasswordSecurity().createHash(password));
+            p.setString(4, this.passwordSecurity.createHash(password));
             p.execute();
         } catch (SQLException | InvalidKeySpecException | NoSuchAlgorithmException e) {
             e.printStackTrace();
