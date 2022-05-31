@@ -87,6 +87,7 @@ public class RegisterServlet extends HttpServlet {
                 } else {
 
                     HttpSession newSession = request.getSession();
+                    newSession.setMaxInactiveInterval(3600);
                     Authentication.setUserSession(newSession, email);
 
                     repository.registerNewUser(name, surname, email, password);
