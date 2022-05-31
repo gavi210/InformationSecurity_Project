@@ -1,14 +1,11 @@
 package it.unibz.examproject.servlets;
 
-import it.unibz.examproject.util.db.PasswordSecurity;
+import it.unibz.examproject.util.UserInputValidator;
 import it.unibz.examproject.util.db.PostgresRepository;
 import it.unibz.examproject.util.db.Repository;
 import it.unibz.examproject.util.db.SQLServerRepository;
 import it.unibz.examproject.util.Authentication;
 import it.unibz.examproject.util.RequestSanitizer;
-import it.unibz.examproject.util.inputvalidation.EmailAddressValidator;
-import it.unibz.examproject.util.inputvalidation.NameSurnameValidator;
-import it.unibz.examproject.util.inputvalidation.PasswordComplexityValidator;
 import jakarta.servlet.http.HttpServlet;
 
 import java.io.IOException;
@@ -20,6 +17,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.apache.commons.codec.binary.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 
 /**
  * Servlet implementation class RegisterServlet
@@ -68,23 +67,19 @@ public class RegisterServlet extends HttpServlet {
             response.getWriter().print("<body>User already logged in!</body>");
             response.getWriter().println("</html>");
         } else {
-            /**
+            /*
              * sanitize the user data both when received and when shown. Ensure and avoids problems of corruption in between.
              */
             String name = request.getParameter("name"); // since parametrized query, replacement is not needed anymore
             String surname = request.getParameter("surname");
             String email = request.getParameter("email");
-            String pwd = request.getParameter("password");
+            String password = request.getParameter("password");
 
-            // once the attributes are loaded, then removed from the object, so to avoid security problems
+            // attributes removed
             RequestSanitizer.removeAllAttributes(request);
 
-            NameSurnameValidator nameValidator = new NameSurnameValidator(name);
-            NameSurnameValidator surnameValidator = new NameSurnameValidator(surname);
-            EmailAddressValidator emailAddressValidator = new EmailAddressValidator(email);
-            PasswordComplexityValidator passwordComplexityValidator = new PasswordComplexityValidator(pwd);
-
-            if (nameValidator.isValid() && surnameValidator.isValid() && emailAddressValidator.isValid() && passwordComplexityValidator.isValid()) {
+            if (UserInputValidator.isNameValid(name) && UserInputValidator.isSurnameValid(surname)
+                    && UserInputValidator.isEmailAddressValid(email) && UserInputValidator.isPasswordValid(password)) {
                 boolean emailAlreadyInUse = repository.emailAlreadyInUse(email);
 
                 if (emailAlreadyInUse) {
@@ -92,13 +87,8 @@ public class RegisterServlet extends HttpServlet {
                     response.getWriter().print("<html><head><title>Email already in use!</title></head>");
                     response.getWriter().print("<body>Email already in use!</body>");
                     response.getWriter().println("</html>");
-
-                    /**
-                     * maybe needed to remove the password parameter from the response page. Just check if it is there
-                     */
                 } else {
-                    repository.registerNewUser(name, surname, email, pwd);
-
+                    repository.registerNewUser(name, surname, email, password);
                     Authentication.setUserSession(session, email);
 
                     request.getRequestDispatcher("home.jsp").forward(request, response);

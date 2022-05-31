@@ -1,5 +1,6 @@
 <%@ page import="jakarta.servlet.http.HttpSession" %>
 <%@ page import="java.util.Map" %>
+<%@ page import="org.apache.commons.text.StringEscapeUtils" %>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1"%>
 <!DOCTYPE html>
 <html>
@@ -20,7 +21,8 @@
 				String userEmail = null;
 				if (userInfo != null)
 					userEmail = userInfo.get("email");
-				out.println(userEmail);
+
+				out.println(StringEscapeUtils.escapeHtml4(userEmail));
 			%></p>
 	  	</div>
 	  	<form class="btn-group" action="LogoutServlet" method="post">

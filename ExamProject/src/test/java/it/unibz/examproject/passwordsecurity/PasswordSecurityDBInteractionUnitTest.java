@@ -1,6 +1,5 @@
 package it.unibz.examproject.passwordsecurity;
 
-import it.unibz.examproject.util.db.PasswordSecurity;
 import it.unibz.examproject.util.db.PostgresRepository;
 import it.unibz.examproject.util.db.Repository;
 import it.unibz.examproject.util.db.SQLServerRepository;

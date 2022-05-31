@@ -105,13 +105,6 @@ public abstract class Repository {
         }
     }
 
-    public List<Email> getReceivedEmails(String email) {
-        List<Email> inbox = new ArrayList<>();
-
-        String sql = getIncomingEmailsQueryString();
-        return getEmails(email, inbox, sql);
-    }
-
     public void registerNewUser(String name, String surname, String email, String password) {
         String sql = getRegisterNewUserQueryString();
         try (PreparedStatement p = connection.prepareStatement(sql)) {
@@ -125,14 +118,21 @@ public abstract class Repository {
         }
     }
 
-    public List<Email> getSentEmails(String email) throws SQLException {
+    public List<Email> getReceivedEmails(String email) {
+        List<Email> inbox = new ArrayList<>();
+
+        String sql = getIncomingEmailsQueryString();
+        return getEmails(email, inbox, sql);
+    }
+
+    public List<Email> getSentEmails(String email) {
         List<Email> sent = new ArrayList<>();
 
         String sql = getSentEmailsQueryString();
         return getEmails(email, sent, sql);
     }
 
-    private List<Email> getEmails(String email, List<Email> sent, String sql) {
+    private List<Email> getEmails(String email, List<Email> emailList, String sql) {
         try (PreparedStatement p = connection.prepareStatement(sql)) {
             p.setString(1, email);
 
@@ -144,12 +144,12 @@ public abstract class Repository {
                 String body = res.getString(4);
                 String timestamp = res.getString(5);
 
-                sent.add(new Email(sender, receiver, subject, body, timestamp));
+                emailList.add(new Email(sender, receiver, subject, body, timestamp));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        return sent;
+        return emailList;
     }
 }

@@ -2,6 +2,7 @@ package it.unibz.examproject.servlets;
 
 import it.unibz.examproject.util.Authentication;
 import it.unibz.examproject.util.RequestSanitizer;
+import it.unibz.examproject.util.UserInputValidator;
 import it.unibz.examproject.util.db.PostgresRepository;
 import it.unibz.examproject.util.db.Repository;
 import it.unibz.examproject.util.db.SQLServerRepository;
@@ -83,7 +84,19 @@ public class SendMailServlet extends HttpServlet {
 			String body = request.getParameter("body");
 			String timestamp = new Date(System.currentTimeMillis()).toInstant().toString();
 
-			repository.sendNewMail(sender, receiver, subject, body, timestamp);
+			// attributes removed
+			RequestSanitizer.removeAllAttributes(request);
+
+			if(UserInputValidator.isEmailAddressValid(receiver) && UserInputValidator.isMailSubjectValid(subject)
+				&& UserInputValidator.isMailBodyValid(body))
+				repository.sendNewMail(sender, receiver, subject, body, timestamp);
+
+			else {
+				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+				response.getWriter().print("<html><head><title>Check input correctness!</title></head>");
+				response.getWriter().print("<body>Check input correctness!</body>");
+				response.getWriter().println("</html>");
+			}
 
 			RequestSanitizer.removeAllAttributes(request);
 			request.getRequestDispatcher("home.jsp").forward(request, response);

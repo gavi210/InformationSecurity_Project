@@ -5,8 +5,7 @@ import it.unibz.examproject.util.db.Repository;
 import it.unibz.examproject.util.db.SQLServerRepository;
 import it.unibz.examproject.util.Authentication;
 import it.unibz.examproject.util.RequestSanitizer;
-import it.unibz.examproject.util.inputvalidation.EmailAddressValidator;
-import it.unibz.examproject.util.inputvalidation.PasswordComplexityValidator;
+import it.unibz.examproject.util.UserInputValidator;
 import jakarta.servlet.http.HttpServlet;
 
 import java.io.IOException;
@@ -74,17 +73,14 @@ public class LoginServlet extends HttpServlet {
         // starts the login sequence
         else {
 
-            /**
+            /*
              * here should introduce input validation
              */
             String email = request.getParameter("email");
-            String pwd = request.getParameter("password");
+            String password = request.getParameter("password");
 
-            EmailAddressValidator emailAddressValidator = new EmailAddressValidator(email);
-            PasswordComplexityValidator passwordValidator = new PasswordComplexityValidator(pwd);
-
-            if (emailAddressValidator.isValid() && passwordValidator.isValid()) {
-                if (repository.areCredentialsValid(email, pwd)) {
+            if (UserInputValidator.isEmailAddressValid(email) && UserInputValidator.isPasswordValid(password)) {
+                if (repository.areCredentialsValid(email, password)) {
                     Authentication.setUserSession(session, email);
                     RequestSanitizer.removeAllAttributes(request);
                     request.getRequestDispatcher("home.jsp").forward(request, response);
