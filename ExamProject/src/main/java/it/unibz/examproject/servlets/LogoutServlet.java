@@ -33,7 +33,6 @@ public class LogoutServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/html");
 
-        // getSession(false): it does not create a new session if the current on does not exist
         HttpSession session = request.getSession(false);
 
         Authentication.removeUserSession(session);

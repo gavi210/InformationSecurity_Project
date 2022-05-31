@@ -10,7 +10,7 @@ public class Authentication {
     private static String USER_EMAIL = "email";
 
     public static boolean isUserLogged(HttpSession currentSession) {
-        return currentSession != null && currentSession.getAttribute("user") != null;
+        return currentSession != null && currentSession.getAttribute(SESSION_ATTR_NAME) != null;
     }
 
     public static void setUserSession(HttpSession currentSession, String userEmail) {
@@ -18,8 +18,8 @@ public class Authentication {
          * put user information - proves that it has logged in
          */
         Map<String,String> userInfo = new HashMap<>();
-        userInfo.put("email", userEmail);
-        currentSession.setAttribute("user", userInfo);
+        userInfo.put(USER_EMAIL, userEmail);
+        currentSession.setAttribute(SESSION_ATTR_NAME, userInfo);
     }
 
     public static void removeUserSession(HttpSession currentSession) {

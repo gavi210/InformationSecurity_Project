@@ -59,7 +59,7 @@ public class RegisterServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/html");
 
-        HttpSession session = request.getSession();
+        HttpSession session = request.getSession(false);
 
         if (Authentication.isUserLogged(session)) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -67,15 +67,12 @@ public class RegisterServlet extends HttpServlet {
             response.getWriter().print("<body>User already logged in!</body>");
             response.getWriter().println("</html>");
         } else {
-            /*
-             * sanitize the user data both when received and when shown. Ensure and avoids problems of corruption in between.
-             */
-            String name = request.getParameter("name"); // since parametrized query, replacement is not needed anymore
+
+            String name = request.getParameter("name");
             String surname = request.getParameter("surname");
             String email = request.getParameter("email");
             String password = request.getParameter("password");
 
-            // attributes removed
             RequestSanitizer.removeAllAttributes(request);
 
             if (UserInputValidator.isNameValid(name) && UserInputValidator.isSurnameValid(surname)
@@ -88,9 +85,11 @@ public class RegisterServlet extends HttpServlet {
                     response.getWriter().print("<body>Email already in use!</body>");
                     response.getWriter().println("</html>");
                 } else {
-                    repository.registerNewUser(name, surname, email, password);
-                    Authentication.setUserSession(session, email);
 
+                    HttpSession newSession = request.getSession();
+                    Authentication.setUserSession(newSession, email);
+
+                    repository.registerNewUser(name, surname, email, password);
                     request.getRequestDispatcher("home.jsp").forward(request, response);
                 }
             } else {

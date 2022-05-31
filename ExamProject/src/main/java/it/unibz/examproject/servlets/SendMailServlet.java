@@ -33,7 +33,7 @@ public class SendMailServlet extends HttpServlet {
      */
     public SendMailServlet() {}
 
-    public void init() throws ServletException {
+    public void init() {
 		try {
 			Properties configProperties = new Properties();
 			configProperties.load(getServletContext().getResourceAsStream("/dbConfig.properties"));
@@ -61,7 +61,7 @@ public class SendMailServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html");
 
-		HttpSession session = request.getSession();
+		HttpSession session = request.getSession(false);
 
 		if(!Authentication.isUserLogged(session)) {
 			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -70,12 +70,6 @@ public class SendMailServlet extends HttpServlet {
 			response.getWriter().println("</html>");
 		}
 		else {
-			/**
-			 * validate user provided information (since could be encrypted (harmless) or plain text: malicious code)
-			 */
-			/**
-			 * sanitize the user data both when received and when shown. Ensure and avoids problems of corruption in between.
-			 */
 			Map<String, String> userInfo = (Map<String, String>) session.getAttribute("user");
 			String sender = userInfo.get("email");
 
@@ -84,7 +78,6 @@ public class SendMailServlet extends HttpServlet {
 			String body = request.getParameter("body");
 			String timestamp = new Date(System.currentTimeMillis()).toInstant().toString();
 
-			// attributes removed
 			RequestSanitizer.removeAllAttributes(request);
 
 			if(UserInputValidator.isEmailAddressValid(receiver) && UserInputValidator.isMailSubjectValid(subject)

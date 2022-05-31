@@ -61,7 +61,7 @@ public class LoginServlet extends HttpServlet {
         response.setContentType("text/html");
 
         // if user logged in, DROP the request
-        HttpSession session = request.getSession();
+        HttpSession session = request.getSession(false);
 
         if (Authentication.isUserLogged(session)) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -70,18 +70,15 @@ public class LoginServlet extends HttpServlet {
             response.getWriter().println("</html>");
         }
 
-        // starts the login sequence
         else {
-
-            /*
-             * here should introduce input validation
-             */
             String email = request.getParameter("email");
             String password = request.getParameter("password");
 
             if (UserInputValidator.isEmailAddressValid(email) && UserInputValidator.isPasswordValid(password)) {
                 if (repository.areCredentialsValid(email, password)) {
-                    Authentication.setUserSession(session, email);
+                    HttpSession newSession = request.getSession();
+                    Authentication.setUserSession(newSession, email);
+
                     RequestSanitizer.removeAllAttributes(request);
                     request.getRequestDispatcher("home.jsp").forward(request, response);
                 } else {
