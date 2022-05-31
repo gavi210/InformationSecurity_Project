@@ -7,7 +7,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
 import static org.junit.Assert.*;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class PasswordSecurityTests {
     String password = "QTRYt3e!KsFft95";
