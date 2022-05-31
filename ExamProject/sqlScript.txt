@@ -2,7 +2,7 @@ CREATE TABLE [user] (
 	name varchar(50)  NOT NULL,
 	surname varchar(50) NOT NULL,
 	email varchar(50) NOT NULL,
-	password varchar(50) NOT NULL,
+	password varchar(65) NOT NULL,
 	CONSTRAINT user_PK PRIMARY KEY (email)
 );
 

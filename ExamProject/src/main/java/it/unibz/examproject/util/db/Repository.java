@@ -11,8 +11,6 @@ public abstract class Repository {
 
     private Properties connectionProperties;
     protected Connection connection;
-    private PasswordSecurity passwordSecurity;
-
 
     /**
      * set up the database connection. Should be the first method invoked before any other interaction with the repository
@@ -24,7 +22,6 @@ public abstract class Repository {
     public void init(Properties connectionProperties) throws SQLException, ClassNotFoundException {
         this.connectionProperties = connectionProperties;
         this.connection = getConnection();
-        this.passwordSecurity = new PasswordSecurity();
     }
 
     /**
@@ -79,16 +76,14 @@ public abstract class Repository {
         String sql = getPasswordGivenEmailQueryString();
 
         try (PreparedStatement p = connection.prepareStatement(sql)) {
-            String pwdHash = passwordSecurity.createHash(password);
             p.setString(1, email);
-            p.setString(2, password);
             ResultSet res = p.executeQuery();
 
             if (!res.next())
                 return false;
 
             String hashedPassword = res.getString(1);
-            return this.passwordSecurity.validatePassword(password, hashedPassword);
+            return PasswordSecurity.validatePassword(password, hashedPassword);
         } catch (SQLException | NoSuchAlgorithmException | InvalidKeySpecException | DecoderException e) {
             e.printStackTrace();
             return false;
@@ -123,7 +118,7 @@ public abstract class Repository {
             p.setString(1, name);
             p.setString(2, surname);
             p.setString(3, email);
-            p.setString(4, this.passwordSecurity.createHash(password));
+            p.setString(4, PasswordSecurity.createHash(password));
             p.execute();
         } catch (SQLException | InvalidKeySpecException | NoSuchAlgorithmException e) {
             e.printStackTrace();
