@@ -104,29 +104,6 @@ public class PasswordSecurity {
             throws DecoderException {
         return Hex.decodeHex(hexString.toCharArray());
     }
-
-    public static void main(String[] args) {
-        try {
-            PasswordSecurity passwordSecurity = new PasswordSecurity();
-            String password = "adwoa";
-            String wrongPassword = "adwoa1";
-            String hash = passwordSecurity.createHash(password);
-            String secondHash = passwordSecurity.createHash(password);
-            System.out.println(hash);
-            System.out.println(secondHash);
-            if (passwordSecurity.validatePassword(wrongPassword, hash)) {
-                System.out.println("FAILURE: WRONG PASSWORD ACCEPTED!");
-            }
-            if (passwordSecurity.validatePassword(password, secondHash)) {
-                System.out.println("PASSED");
-            } else
-                System.out.println("FAILURE: PASSWORD NOT ACCEPTED!");
-
-        } catch (Exception ex) {
-            System.out.println("ERROR: " + ex);
-        }
-    }
-
 }
 
 
