@@ -21,9 +21,4 @@ public class Authentication {
         userInfo.put(USER_EMAIL, userEmail);
         currentSession.setAttribute(SESSION_ATTR_NAME, userInfo);
     }
-
-    public static void removeUserSession(HttpSession currentSession) {
-        if(isUserLogged(currentSession))
-            currentSession.removeAttribute(SESSION_ATTR_NAME);
-    }
 }
