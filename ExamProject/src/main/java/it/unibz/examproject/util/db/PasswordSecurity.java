@@ -10,10 +10,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
 public class PasswordSecurity {
-    public static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA1";
-    public static final int SALT_BYTES = 16;
-    public static final int PBKDF2_ITERATIONS = 10000;
-    public static final int KEY_LENGTH = 128;
+    private static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA1";
+    private static final int SALT_BYTES = 16;
+    private static final int PBKDF2_ITERATIONS = 10000;
+    private static final int KEY_LENGTH = 128;
 
 
     /**
@@ -34,7 +34,7 @@ public class PasswordSecurity {
      * @param password the password to hash
      * @return a salted PBKDF2 hash of the password
      */
-    public String createHash(String password)
+    public static String createHash(String password)
             throws NoSuchAlgorithmException, InvalidKeySpecException {
         char[] passwordToChar = password.toCharArray();
 
@@ -42,6 +42,7 @@ public class PasswordSecurity {
         byte[] salt = new byte[SALT_BYTES];
         random.nextBytes(salt);
         byte[] hash = hashPassword(passwordToChar, salt);
+
         // format salt&hash
         return encodeHexToString(salt) + "&" + encodeHexToString(hash);
     }
@@ -53,7 +54,7 @@ public class PasswordSecurity {
      * @param hashPassword the hash of the valid password
      * @return true if the password is correct, false if not
      */
-    public boolean validatePassword(String password, String hashPassword)
+    public static boolean validatePassword(String password, String hashPassword)
             throws NoSuchAlgorithmException, InvalidKeySpecException, DecoderException {
         char[] passwordToChar = password.toCharArray();
         String[] hashes = hashPassword.split("&");
@@ -72,7 +73,7 @@ public class PasswordSecurity {
      * @param b the second byte array
      * @return true if both byte arrays are the same, false if not
      */
-    public static boolean byteEquals(byte[] a, byte[] b) {
+    private static boolean byteEquals(byte[] a, byte[] b) {
         int diff = a.length ^ b.length;
         int i = 0;
         while (i < a.length && i < b.length) {
@@ -89,7 +90,7 @@ public class PasswordSecurity {
      * @param bytes the byte array to convert
      * @return the hex string decoded into a byte array
      */
-    public static String encodeHexToString(byte[] bytes) {
+    private static String encodeHexToString(byte[] bytes) {
         return Hex.encodeHexString(bytes);
     }
 
@@ -99,7 +100,7 @@ public class PasswordSecurity {
      * @param hexString the hex string
      * @return an array of bytes encoded in a hex string
      */
-    public static byte[] decodeHexString(String hexString)
+    private static byte[] decodeHexString(String hexString)
             throws DecoderException {
         return Hex.decodeHex(hexString.toCharArray());
     }
