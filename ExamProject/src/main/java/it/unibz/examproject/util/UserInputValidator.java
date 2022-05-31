@@ -50,10 +50,10 @@ public class UserInputValidator {
     }
 
     public static boolean isMailSubjectValid(String subject) {
-        return subject != null && subject.length() < 300 && !subject.contains("\r") && !subject.contains("\n");
+        return subject != null && subject.length() < 100 && !subject.contains("\r") && !subject.contains("\n");
     }
 
     public static boolean isMailBodyValid(String body) {
-        return body != null && body.length() != 20000;
+        return body != null && body.length() != 1000;
     }
 }

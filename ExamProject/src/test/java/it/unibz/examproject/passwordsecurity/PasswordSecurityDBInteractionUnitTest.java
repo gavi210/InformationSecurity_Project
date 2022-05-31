@@ -16,8 +16,10 @@ import static org.junit.Assert.assertTrue;
 
 public class PasswordSecurityDBInteractionUnitTest {
     Repository repository;
+
     @Test
-    public void registerNewUser() throws IOException, SQLException, ClassNotFoundException, NoSuchAlgorithmException, InvalidKeySpecException {Properties configProperties = new Properties();
+    public void registerNewUser() throws IOException, SQLException, ClassNotFoundException {
+        Properties configProperties = new Properties();
         configProperties.load(new FileReader("src/test/resources/dbConfig.properties"));
 
         String dbms = configProperties.getProperty("db.dbms");
