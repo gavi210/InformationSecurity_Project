@@ -1,3 +1,5 @@
+import it.unibz.mailclient.ParameterStringBuilder;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.*;
@@ -9,6 +11,9 @@ public class RequestSender {
     private static final String mail = "john@gmail.com";
     private static final String password = "YouCantSeeMe1!";
     private static final String urlString = "http://localhost:8080/ExamProject_war_exploded/LoginServlet";
+
+    private static final CookieManager cookieManager = new CookieManager();
+    private static HttpURLConnection con;
 
     public static void main(String[] args) throws IOException {
         URL url = new URL(urlString);
@@ -25,8 +30,6 @@ public class RequestSender {
         out.flush();
         out.close();
 
-
-        CookieManager cookieManager = new CookieManager();
         String cookiesHeader = con.getHeaderField("Set-Cookie");
         List<HttpCookie> cookies = HttpCookie.parse(cookiesHeader);
         cookies.forEach(cookie -> cookieManager.getCookieStore().add(null, cookie));
