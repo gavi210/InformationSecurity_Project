@@ -77,7 +77,8 @@ public class LoginServlet extends HttpServlet {
             if (UserInputValidator.isEmailAddressValid(email) && UserInputValidator.isPasswordValid(password)) {
                 if (repository.areCredentialsValid(email, password)) {
                     HttpSession newSession = request.getSession();
-                    newSession.setMaxInactiveInterval(3600);
+                    /* assume that the Cookie never expires until the session is invalidated through logout mechanism */
+                    // newSession.setMaxInactiveInterval(3600);
                     
                     Authentication.setUserSession(newSession, email);
 

@@ -90,7 +90,9 @@ public class RegisterServlet extends HttpServlet {
                 } else {
 
                     HttpSession newSession = request.getSession();
-                    newSession.setMaxInactiveInterval(3600);
+                    /* assume that the Cookie never expires until the session is invalidated through logout mechanism */
+                    // newSession.setMaxInactiveInterval(3600);
+
                     Authentication.setUserSession(newSession, email);
 
                     repository.registerNewUser(name, surname, email, password);
