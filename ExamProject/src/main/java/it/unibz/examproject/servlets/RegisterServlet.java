@@ -1,6 +1,7 @@
 package it.unibz.examproject.servlets;
 
 import it.unibz.examproject.util.UserInputValidator;
+import it.unibz.examproject.util.db.PasswordSecurity;
 import it.unibz.examproject.util.db.PostgresRepository;
 import it.unibz.examproject.util.db.Repository;
 import it.unibz.examproject.util.db.SQLServerRepository;
@@ -9,6 +10,8 @@ import it.unibz.examproject.util.RequestSanitizer;
 import jakarta.servlet.http.HttpServlet;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -91,6 +94,7 @@ public class RegisterServlet extends HttpServlet {
                     Authentication.setUserSession(newSession, email);
 
                     repository.registerNewUser(name, surname, email, password);
+
                     request.getRequestDispatcher("home.jsp").forward(request, response);
                 }
             } else {
