@@ -59,6 +59,8 @@ public abstract class Repository {
 
     protected abstract String getSentEmailsQueryString();
 
+    protected abstract String getResetDatabaseQueryString();
+
     public boolean emailAlreadyInUse(String email) {
         String sql = getExistsUserByEmailQueryString();
         try (PreparedStatement p = connection.prepareStatement(sql)) {
@@ -130,6 +132,11 @@ public abstract class Repository {
 
         String sql = getSentEmailsQueryString();
         return getEmails(email, sent, sql);
+    }
+
+    public void resetDatabase() throws SQLException {
+        Statement stm = connection.createStatement();
+        stm.execute(getResetDatabaseQueryString());
     }
 
     private List<Email> getEmails(String email, List<Email> emailList, String sql) {

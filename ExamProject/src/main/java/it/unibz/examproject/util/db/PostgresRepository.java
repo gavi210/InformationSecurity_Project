@@ -33,4 +33,9 @@ public class PostgresRepository extends Repository {
     protected String getSentEmailsQueryString() {
         return "SELECT sender, receiver, subject, body, \"time\" FROM mail WHERE sender = ? ORDER BY \"time\" DESC";
     }
+
+    @Override
+    protected String getResetDatabaseQueryString() {
+        return "DELETE FROM mail; DELETE from \"user\"";
+    }
 }
