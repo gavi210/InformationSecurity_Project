@@ -1,5 +1,6 @@
 package it.unibz.examproject.servlets;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import it.unibz.examproject.model.Login;
 import it.unibz.examproject.model.Registration;
 import it.unibz.examproject.util.JsonOperations;
@@ -27,20 +28,12 @@ import jakarta.servlet.http.HttpSession;
 import org.apache.commons.codec.binary.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
-/**
- * Servlet implementation class RegisterServlet
- */
 @WebServlet("/RegisterServlet")
 public class RegisterServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     private static Repository repository;
 
-
-
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
     public RegisterServlet() {
         super();
     }
@@ -63,50 +56,42 @@ public class RegisterServlet extends HttpServlet {
         }
     }
 
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         response.setContentType("text/html");
 
         HttpSession session = request.getSession(false);
 
         if (Authentication.isUserLogged(session)) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().print("<html><head><title>User already logged in!</title></head>");
-            response.getWriter().print("<body>User already logged in!</body>");
-            response.getWriter().println("</html>");
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "User already logged in!");
         } else {
 
-            String requestBody = request.getReader().lines().collect(Collectors.joining(""));
-            Registration registration = JsonOperations.getObject(requestBody, Registration.class);
+            try {
+                String requestBody = request.getReader().lines().collect(Collectors.joining(""));
+                Registration registration = JsonOperations.getObject(requestBody, Registration.class);
 
-            RequestSanitizer.removeAllAttributes(request);
+                if (UserInputValidator.isNameValid(registration.getName()) && UserInputValidator.isSurnameValid(registration.getSurname())
+                        && UserInputValidator.isEmailAddressValid(registration.getMail()) && UserInputValidator.isPasswordValid(registration.getPassword())) {
+                    boolean emailAlreadyInUse = repository.emailAlreadyInUse(registration.getMail());
 
-            if (UserInputValidator.isNameValid(registration.getName()) && UserInputValidator.isSurnameValid(registration.getSurname())
-                    && UserInputValidator.isEmailAddressValid(registration.getMail()) && UserInputValidator.isPasswordValid(registration.getPassword())) {
-                boolean emailAlreadyInUse = repository.emailAlreadyInUse(registration.getMail());
+                    if (emailAlreadyInUse) {
+                        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Email already in use!");
+                    } else {
 
-                if (emailAlreadyInUse) {
-                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    response.getWriter().print("<html><head><title>Email already in use!</title></head>");
-                    response.getWriter().print("<body>Email already in use!</body>");
-                    response.getWriter().println("</html>");
+                        HttpSession newSession = request.getSession();
+                        /* assume that the Cookie never expires until the session is invalidated through logout mechanism */
+                        // newSession.setMaxInactiveInterval(3600);
+
+                        Authentication.setUserSession(newSession, registration.getMail());
+
+                        repository.registerNewUser(registration.getName(), registration.getSurname(), registration.getMail(), registration.getPassword());
+                    }
                 } else {
-
-                    HttpSession newSession = request.getSession();
-                    /* assume that the Cookie never expires until the session is invalidated through logout mechanism */
-                    // newSession.setMaxInactiveInterval(3600);
-
-                    Authentication.setUserSession(newSession, registration.getMail());
-
-                    repository.registerNewUser(registration.getName(), registration.getSurname(), registration.getMail(), registration.getPassword());
-
-                    request.getRequestDispatcher("home.jsp").forward(request, response);
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Check input correctness");
                 }
-            } else {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().print("<html><head><title>Check input correctness!</title></head>");
-                response.getWriter().print("<body>Check input correctness!</body>");
-                response.getWriter().println("</html>");
+            } catch(JsonProcessingException e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Malformed request body");
             }
+
         }
     }
 

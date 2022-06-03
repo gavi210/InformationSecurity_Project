@@ -1,6 +1,5 @@
 package it.unibz.examproject.servlets;
 
-import it.unibz.examproject.util.Authentication;
 import it.unibz.examproject.util.RequestSanitizer;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -15,32 +14,16 @@ import java.io.IOException;
 public class LogoutServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
     public LogoutServlet() {
         super();
     }
 
-    /**
-     * onPost
-     *
-     * @param request
-     * @param response
-     * @throws ServletException
-     * @throws IOException
-     */
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
         response.setContentType("text/html");
 
         HttpSession session = request.getSession(false);
 
         if(session != null)
             session.invalidate();
-
-        RequestSanitizer.removeAllAttributes(request);
-
-        request.getRequestDispatcher("login.html").forward(request, response);
-
     }
 }

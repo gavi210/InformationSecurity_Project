@@ -14,7 +14,7 @@ public class Login {
         return password;
     }
 
-    public Login(@JsonProperty("mail") String mail, @JsonProperty("password") String password) {
+    public Login(@JsonProperty("email") String mail, @JsonProperty("password") String password) {
         this.mail = mail;
         this.password = password;
     }

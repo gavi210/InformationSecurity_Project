@@ -1,5 +1,6 @@
 package it.unibz.examproject.servlets;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import it.unibz.examproject.model.Login;
 import it.unibz.examproject.util.JsonOperations;
 import it.unibz.examproject.util.db.PostgresRepository;
@@ -27,9 +28,6 @@ public class LoginServlet extends HttpServlet {
 
     private static Repository repository;
 
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
     public LoginServlet() {
         super();
     }
@@ -52,51 +50,37 @@ public class LoginServlet extends HttpServlet {
         }
     }
 
-    /**
-     * onPost
-     *
-     * @param request
-     * @param response
-     * @throws ServletException
-     * @throws IOException
-     */
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/html");
 
-        // if user logged in, DROP the request
         HttpSession session = request.getSession(false);
 
         if (Authentication.isUserLogged(session)) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().print("<html><head><title>User already logged in!</title></head>");
-            response.getWriter().print("<body>User already logged in!</body>");
-            response.getWriter().println("</html>");
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "User already logged in!");
         }
-
         else {
-
             String requestBody = request.getReader().lines().collect(Collectors.joining(""));
-            Login credentials = JsonOperations.getObject(requestBody, Login.class);
 
-            if (UserInputValidator.isEmailAddressValid(credentials.getMail()) && UserInputValidator.isPasswordValid(credentials.getPassword())) {
-                if (repository.areCredentialsValid(credentials.getMail(), credentials.getPassword())) {
-                    HttpSession newSession = request.getSession();
-                    /* assume that the Cookie never expires until the session is invalidated through logout mechanism */
-                    // newSession.setMaxInactiveInterval(3600);
-                    
-                    Authentication.setUserSession(newSession, credentials.getMail());
+            Login credentials;
+            try {
+                credentials = JsonOperations.getObject(requestBody, Login.class);
+                if (UserInputValidator.isEmailAddressValid(credentials.getMail()) && UserInputValidator.isPasswordValid(credentials.getPassword())) {
+                    if (repository.areCredentialsValid(credentials.getMail(), credentials.getPassword())) {
+                        HttpSession newSession = request.getSession();
+                        /* assume that the Cookie never expires until the session is invalidated through logout mechanism */
+                        // newSession.setMaxInactiveInterval(3600);
 
-                    RequestSanitizer.removeAllAttributes(request);
-                    request.getRequestDispatcher("home.jsp").forward(request, response);
+                        Authentication.setUserSession(newSession, credentials.getMail());
+
+                        response.setStatus(HttpServletResponse.SC_OK);
+                    } else {
+                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                    }
                 } else {
-                    RequestSanitizer.removeAllAttributes(request);
-                    request.getRequestDispatcher("login.html").forward(request, response);
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Check input correctness!");
                 }
-            } else {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().print("<html><head><title>Check input correctness!</title></head>");
-                response.getWriter().print("<body>Check input correctness!</body>");
-                response.getWriter().println("</html>");
+            } catch(JsonProcessingException e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Malformed request body");
             }
         }
     }

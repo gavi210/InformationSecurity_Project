@@ -1,5 +1,7 @@
 package it.unibz.examproject.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Registration {
 
     private final String name;
@@ -7,7 +9,8 @@ public class Registration {
     private final String mail;
     private final String password;
 
-    public Registration(String name, String surname, String mail, String password) {
+    public Registration(@JsonProperty("name") String name, @JsonProperty("surname") String surname,
+                        @JsonProperty("email") String mail, @JsonProperty("password") String password) {
         this.name = name;
         this.surname = surname;
         this.mail = mail;

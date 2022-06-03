@@ -19,9 +19,6 @@ public class ResetDatabaseServlet extends HttpServlet {
 
     private static Repository repository;
 
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
     public ResetDatabaseServlet() {
         super();
     }
@@ -44,13 +41,13 @@ public class ResetDatabaseServlet extends HttpServlet {
         }
     }
 
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
             repository.resetDatabase();
             response.setStatus(HttpServletResponse.SC_OK);
         } catch (SQLException e) {
             e.printStackTrace();
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 }
