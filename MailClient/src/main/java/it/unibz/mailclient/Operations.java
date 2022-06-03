@@ -1,8 +1,16 @@
 package it.unibz.mailclient;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import it.unibz.mailclient.model.*;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +21,8 @@ public class Operations {
 
     private HttpURLConnection con;
 
+    public enum GetEmailsOperation { inbox, sent }
+
     public Operations(String urlString) {
         this.urlString = urlString;
         this.cookieManager = new CookieManager();
@@ -21,43 +31,108 @@ public class Operations {
     public void login(String mail, String password) throws IOException {
         getNewPostConnection(urlString + "/LoginServlet");
 
-        Map<String, String> loginParameters = new HashMap<>();
-        loginParameters.put("email", mail);
-        loginParameters.put("password", password);
-
         addCookiesToRequest();
-        addRequestParameters(loginParameters);
 
-        /* modify the class state with the new information
-         * Update:
-         * - cookies in the CookieManager
-         * */
-        addCookiesToCookieStore();
+        Login loginCredentials = new Login(mail, password);
+        writeRequestBody(loginCredentials);
+
+        submitRequest();
+        refreshCookies();
     }
+
+
 
     public void register(String name, String surname, String mail, String password) throws IOException {
         getNewPostConnection(urlString + "/RegisterServlet");
 
-        Map<String, String> registerParameters = new HashMap<>();
-        registerParameters.put("name", name);
-        registerParameters.put("surname", surname);
-        registerParameters.put("email", mail);
-        registerParameters.put("password", password);
+        addCookiesToRequest();
+
+        Registration registration = new Registration(name, surname, mail, password);
+        writeRequestBody(registration);
+
+        refreshCookies();
+    }
+
+    public void sendEmail(String receiver, String subject, String body) throws IOException {
+        getNewPostConnection(urlString + "/SendMailServlet");
 
         addCookiesToRequest();
-        addRequestParameters(registerParameters);
 
-        /* modify the class state with the new information
-         * Update:
-         * - cookies in the CookieManager
-         * */
-        addCookiesToCookieStore();
+        EmailForSendMailRequest email = new EmailForSendMailRequest(receiver, subject, body);
+        writeRequestBody(email);
+
+        refreshCookies();
+    }
+
+    public List<Email> getInboxEmails() throws IOException {
+        getNewGetRequest(urlString + "/GetInboxMailServlet");
+
+        addCookiesToRequest();
+
+        refreshCookies();
+
+        String body = new String(this.con.getInputStream().readAllBytes());
+
+        return new ObjectMapper().readValue(body, new TypeReference<List<Email>>() {});
+    }
+
+    public List<Email> getSentEmails() throws IOException {
+        getNewGetRequest(urlString + "/GetSentMailServlet");
+
+        addCookiesToRequest();
+
+        refreshCookies();
+
+        String body = new String(this.con.getInputStream().readAllBytes());
+
+        return new ObjectMapper().readValue(body, new TypeReference<List<Email>>() {});
+    }
+
+    public void logout() throws IOException {
+        getNewPostConnection(urlString + "/LogoutServlet");
+
+        addCookiesToRequest();
+
+        removeOldCookies();
+    }
+
+    public void resetDatabase() throws IOException {
+        getNewPostConnection(urlString + "/ResetDatabaseServlet");
+        // consume the response code, it ensures that the request is sent and processed by the server
+        submitRequest();
+    }
+
+    private void submitRequest() throws IOException {
+        this.con.getResponseCode();
+    }
+
+    private void refreshCookies() throws IOException {
+        String cookiesHeader = this.con.getHeaderField("Set-Cookie");
+        if(cookiesHeader != null) {
+            List<HttpCookie> cookies = HttpCookie.parse(cookiesHeader);
+            cookies.forEach(cookie -> this.cookieManager.getCookieStore().add(null, cookie));
+        }
+    }
+
+    private void writeRequestBody(Object obj) throws IOException {
+        this.con.setDoOutput(true);
+        OutputStream stream = this.con.getOutputStream();
+        stream.write(obj.toString().getBytes(StandardCharsets.UTF_8));
+        stream.flush();
+        stream.close();
     }
 
     private void getNewPostConnection(String urlString) throws IOException {
         URL url = new URL(urlString);
         this.con = (HttpURLConnection) url.openConnection();
-        con.setRequestMethod("POST");
+        this.con.setRequestMethod("POST");
+        this.con.setDoOutput(true);
+    }
+
+    private void getNewGetRequest(String urlString) throws IOException {
+        URL url = new URL(urlString);
+        this.con = (HttpURLConnection) url.openConnection();
+        con.setRequestMethod("GET");
     }
 
     private void addRequestParameters(Map<String,String> parameters) throws IOException {
@@ -73,12 +148,8 @@ public class Operations {
                 join(this.cookieManager.getCookieStore().getCookies()));
     }
 
-    private void addCookiesToCookieStore() {
-        String cookiesHeader = this.con.getHeaderField("Set-Cookie");
-        if(cookiesHeader != null) {
-            List<HttpCookie> cookies = HttpCookie.parse(cookiesHeader);
-            cookies.forEach(cookie -> this.cookieManager.getCookieStore().add(null, cookie));
-        }
+    private void removeOldCookies() {
+        this.cookieManager.getCookieStore().removeAll();
     }
 
     private static <T> String join(List<T> objects) {
@@ -99,4 +170,6 @@ public class Operations {
     public HttpURLConnection getCon() {
         return con;
     }
+
+
 }

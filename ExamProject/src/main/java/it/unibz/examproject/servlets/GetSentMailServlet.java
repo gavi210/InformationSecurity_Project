@@ -1,8 +1,10 @@
 package it.unibz.examproject.servlets;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.unibz.examproject.model.Email;
 import it.unibz.examproject.model.Login;
+import it.unibz.examproject.model.ModeGetEmail;
 import it.unibz.examproject.util.*;
 import it.unibz.examproject.util.db.PostgresRepository;
 import it.unibz.examproject.util.db.Repository;
@@ -15,7 +17,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,7 +27,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-@WebServlet("/GetMailServlet")
+@WebServlet("/GetInboxMailServlet")
 public class GetMailServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
@@ -51,10 +55,7 @@ public class GetMailServlet extends HttpServlet {
         }
     }
 
-
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        response.setContentType("application/json");
-
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession(false);
 
         if(!Authentication.isUserLogged(session)) {
@@ -64,30 +65,13 @@ public class GetMailServlet extends HttpServlet {
         else {
             Map<String, String> userInfo = (Map<String, String>) session.getAttribute("user");
             String userEmail = userInfo.get("email");
+            List<Email> userEmails = repository.getReceivedEmails(userEmail);
 
-            String mode = request.getParameter("mode");
-            if(mode == null || !ServletUtil.isGetMailModeValid(mode)) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Wrong mode parameter");
-            }
-            else {
-                List<Email> userEmails;
-                switch(mode) {
-                    case "inbox":
-                        userEmails = repository.getReceivedEmails(userEmail);
-                        break;
-                    case "sent":
-                        userEmails = repository.getSentEmails(userEmail);
-                        break;
-                    default:
-                        userEmails = new LinkedList<>();
-                }
-
-                String jsonOutput = new ObjectMapper().writeValueAsString(userEmails);
-                PrintWriter writer = response.getWriter();
-                writer.write(jsonOutput);
-                writer.flush();
-            }
-
+            String jsonOutput = new ObjectMapper().writeValueAsString(userEmails);
+            PrintWriter writer = response.getWriter();
+            writer.write(jsonOutput);
+            writer.flush();
+            writer.close();
         }
     }
 }
