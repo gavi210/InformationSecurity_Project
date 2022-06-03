@@ -1,5 +1,8 @@
 package it.unibz.examproject.servlets;
 
+import it.unibz.examproject.model.Login;
+import it.unibz.examproject.model.Registration;
+import it.unibz.examproject.util.JsonOperations;
 import it.unibz.examproject.util.UserInputValidator;
 import it.unibz.examproject.util.db.PasswordSecurity;
 import it.unibz.examproject.util.db.PostgresRepository;
@@ -14,6 +17,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.sql.SQLException;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -71,16 +75,14 @@ public class RegisterServlet extends HttpServlet {
             response.getWriter().println("</html>");
         } else {
 
-            String name = request.getParameter("name");
-            String surname = request.getParameter("surname");
-            String email = request.getParameter("email");
-            String password = request.getParameter("password");
+            String requestBody = request.getReader().lines().collect(Collectors.joining(""));
+            Registration registration = JsonOperations.getObject(requestBody, Registration.class);
 
             RequestSanitizer.removeAllAttributes(request);
 
-            if (UserInputValidator.isNameValid(name) && UserInputValidator.isSurnameValid(surname)
-                    && UserInputValidator.isEmailAddressValid(email) && UserInputValidator.isPasswordValid(password)) {
-                boolean emailAlreadyInUse = repository.emailAlreadyInUse(email);
+            if (UserInputValidator.isNameValid(registration.getName()) && UserInputValidator.isSurnameValid(registration.getSurname())
+                    && UserInputValidator.isEmailAddressValid(registration.getMail()) && UserInputValidator.isPasswordValid(registration.getPassword())) {
+                boolean emailAlreadyInUse = repository.emailAlreadyInUse(registration.getMail());
 
                 if (emailAlreadyInUse) {
                     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -93,9 +95,9 @@ public class RegisterServlet extends HttpServlet {
                     /* assume that the Cookie never expires until the session is invalidated through logout mechanism */
                     // newSession.setMaxInactiveInterval(3600);
 
-                    Authentication.setUserSession(newSession, email);
+                    Authentication.setUserSession(newSession, registration.getMail());
 
-                    repository.registerNewUser(name, surname, email, password);
+                    repository.registerNewUser(registration.getName(), registration.getSurname(), registration.getMail(), registration.getPassword());
 
                     request.getRequestDispatcher("home.jsp").forward(request, response);
                 }

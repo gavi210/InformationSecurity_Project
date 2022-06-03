@@ -1,5 +1,7 @@
 package it.unibz.examproject.servlets;
 
+import it.unibz.examproject.model.Login;
+import it.unibz.examproject.util.JsonOperations;
 import it.unibz.examproject.util.db.PostgresRepository;
 import it.unibz.examproject.util.db.Repository;
 import it.unibz.examproject.util.db.SQLServerRepository;
@@ -11,6 +13,7 @@ import jakarta.servlet.http.HttpServlet;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -71,16 +74,17 @@ public class LoginServlet extends HttpServlet {
         }
 
         else {
-            String email = request.getParameter("email");
-            String password = request.getParameter("password");
 
-            if (UserInputValidator.isEmailAddressValid(email) && UserInputValidator.isPasswordValid(password)) {
-                if (repository.areCredentialsValid(email, password)) {
+            String requestBody = request.getReader().lines().collect(Collectors.joining(""));
+            Login credentials = JsonOperations.getObject(requestBody, Login.class);
+
+            if (UserInputValidator.isEmailAddressValid(credentials.getMail()) && UserInputValidator.isPasswordValid(credentials.getPassword())) {
+                if (repository.areCredentialsValid(credentials.getMail(), credentials.getPassword())) {
                     HttpSession newSession = request.getSession();
                     /* assume that the Cookie never expires until the session is invalidated through logout mechanism */
                     // newSession.setMaxInactiveInterval(3600);
                     
-                    Authentication.setUserSession(newSession, email);
+                    Authentication.setUserSession(newSession, credentials.getMail());
 
                     RequestSanitizer.removeAllAttributes(request);
                     request.getRequestDispatcher("home.jsp").forward(request, response);

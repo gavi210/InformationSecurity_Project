@@ -1,5 +1,6 @@
 package it.unibz.examproject.util.db;
 
+import it.unibz.examproject.model.Email;
 import org.apache.commons.codec.DecoderException;
 
 import java.security.NoSuchAlgorithmException;

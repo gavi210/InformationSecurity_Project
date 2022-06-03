@@ -2,7 +2,7 @@ package it.unibz.examproject.servlets;
 
 import it.unibz.examproject.util.HtmlEscape;
 import it.unibz.examproject.util.RequestSanitizer;
-import it.unibz.examproject.util.db.Email;
+import it.unibz.examproject.model.Email;
 import it.unibz.examproject.util.db.PostgresRepository;
 import it.unibz.examproject.util.db.Repository;
 import it.unibz.examproject.util.db.SQLServerRepository;

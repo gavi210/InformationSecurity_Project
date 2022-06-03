@@ -1,6 +1,9 @@
 package it.unibz.examproject.servlets;
 
+import it.unibz.examproject.model.Email;
+import it.unibz.examproject.model.Login;
 import it.unibz.examproject.util.Authentication;
+import it.unibz.examproject.util.JsonOperations;
 import it.unibz.examproject.util.RequestSanitizer;
 import it.unibz.examproject.util.UserInputValidator;
 import it.unibz.examproject.util.db.PostgresRepository;
@@ -18,6 +21,7 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 /**
  * Servlet implementation class SendMailServlet
@@ -73,16 +77,15 @@ public class SendMailServlet extends HttpServlet {
 			Map<String, String> userInfo = (Map<String, String>) session.getAttribute("user");
 			String sender = userInfo.get("email");
 
-			String receiver = request.getParameter("receiver");
-			String subject = request.getParameter("subject");
-			String body = request.getParameter("body");
-			String timestamp = new Date(System.currentTimeMillis()).toInstant().toString();
+			String requestBody = request.getReader().lines().collect(Collectors.joining(""));
+			Email mail = JsonOperations.getObject(requestBody, Email.class);
 
 			RequestSanitizer.removeAllAttributes(request);
 
-			if(UserInputValidator.isEmailAddressValid(receiver) && UserInputValidator.isMailSubjectValid(subject)
-				&& UserInputValidator.isMailBodyValid(body))
-				repository.sendNewMail(sender, receiver, subject, body, timestamp);
+			if(UserInputValidator.isEmailAddressValid(mail.getReceiver()) && UserInputValidator.isMailSubjectValid(mail.getSubject())
+				&& UserInputValidator.isMailBodyValid(mail.getBody()))
+				repository.sendNewMail(sender, mail.getReceiver(), mail.getSubject(), mail.getBody(),
+						new Date(System.currentTimeMillis()).toInstant().toString());
 
 			else {
 				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
