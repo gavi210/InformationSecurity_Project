@@ -76,7 +76,7 @@ public class SendMailServlet extends HttpServlet {
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Check input correctness");
 				}
 			} catch(JsonProcessingException e) {
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Malformed request body");
 			}
 
 		}

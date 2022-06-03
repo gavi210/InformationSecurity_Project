@@ -6,14 +6,14 @@ public class Registration {
 
     private final String name;
     private final String surname;
-    private final String mail;
+    private final String email;
     private final String password;
 
     public Registration(@JsonProperty("name") String name, @JsonProperty("surname") String surname,
-                        @JsonProperty("email") String mail, @JsonProperty("password") String password) {
+                        @JsonProperty("email") String email, @JsonProperty("password") String password) {
         this.name = name;
         this.surname = surname;
-        this.mail = mail;
+        this.email = email;
         this.password = password;
     }
 
@@ -25,8 +25,8 @@ public class Registration {
         return surname;
     }
 
-    public String getMail() {
-        return mail;
+    public String getEmail() {
+        return email;
     }
 
     public String getPassword() {
