@@ -10,6 +10,13 @@ public class EuclideanAlgorithm {
 		return 1;
 	}
 
+	public static int gcdEuclidean(int n1, int n2) {
+		if (n2 == 0) {
+			return n1;
+		}
+		return EuclideanAlgorithm.gcdEuclidean(n2, n1 % n2);
+	}
+
 	/*
 
 	private static int getMod(int number, int mod) {
@@ -64,12 +71,6 @@ public class EuclideanAlgorithm {
 
 		return p_i;
 	}
-	 */
 
-	public static int gcdEuclidean(int n1, int n2) {
-		if (n2 == 0) {
-			return n1;
-		}
-		return EuclideanAlgorithm.gcdEuclidean(n2, n1 % n2);
-	}
+	 */
 }

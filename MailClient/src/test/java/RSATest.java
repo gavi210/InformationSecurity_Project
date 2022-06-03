@@ -35,7 +35,7 @@ public class RSATest {
 
     @Test
     public void decryptMessage() {
-        String plaintext = "qwertyuiopasdfghjklzxcvbnm";
+        String plaintext = "aaaa";
 
         for(int i = 0; i < 100; i++) {
             keys = rsa.generateKeys();
@@ -51,5 +51,6 @@ public class RSATest {
     public void euclideanAlgorithmTest() {
         assertEquals(611, EuclideanAlgorithm.getPrivateKeyValue(11, 1680));
     }
+
     
 }
