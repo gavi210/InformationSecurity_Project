@@ -9,11 +9,11 @@ public class Registration {
     private final String surname;
     private final String email;
     private final String password;
-    private final int publicKey;
+    private final PublicKey publicKey;
 
     public Registration(@JsonProperty("name") String name, @JsonProperty("surname") String surname,
                         @JsonProperty("email") String email, @JsonProperty("password") String password,
-                        @JsonProperty("publicKey") int publicKey) {
+                        @JsonProperty("publicKey") PublicKey publicKey) {
         this.name = name;
         this.surname = surname;
         this.email = email;
@@ -37,7 +37,7 @@ public class Registration {
         return password;
     }
 
-    public int getPublicKey() {
+    public PublicKey getPublicKey() {
         return publicKey;
     }
 }

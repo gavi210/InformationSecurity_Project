@@ -60,8 +60,10 @@ public class RegisterServlet extends HttpServlet {
 
             try {
                 String requestBody = request.getReader().lines().collect(Collectors.joining(""));
+                System.out.println(requestBody);
                 Registration registration = JsonOperations.getObject(requestBody, Registration.class);
 
+                System.out.println(registration.toString());
                 if (UserInputValidator.isNameValid(registration.getName()) && UserInputValidator.isSurnameValid(registration.getSurname())
                         && UserInputValidator.isEmailAddressValid(registration.getEmail()) && UserInputValidator.isPasswordValid(registration.getPassword())
                         && UserInputValidator.isPublicKeyValid(registration.getPublicKey())) {
@@ -78,7 +80,7 @@ public class RegisterServlet extends HttpServlet {
                         Authentication.setUserSession(newSession, registration.getEmail());
 
                         repository.registerNewUser(registration.getName(), registration.getSurname(), registration.getEmail(),
-                                registration.getPassword(), registration.getPublicKey());
+                                registration.getPassword(), registration.getPublicKey().getD(), registration.getPublicKey().getN());
                     }
                 } else {
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Check input correctness");

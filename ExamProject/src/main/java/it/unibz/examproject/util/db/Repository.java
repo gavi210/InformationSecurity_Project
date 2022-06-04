@@ -1,7 +1,7 @@
 package it.unibz.examproject.util.db;
 
 import it.unibz.examproject.model.Email;
-import it.unibz.examproject.model.UserPublicKey;
+import it.unibz.examproject.model.PublicKey;
 import org.apache.commons.codec.DecoderException;
 
 import java.security.NoSuchAlgorithmException;
@@ -111,7 +111,7 @@ public abstract class Repository {
         }
     }
 
-    public void registerNewUser(String name, String surname, String email, String password, int publicKey) {
+    public void registerNewUser(String name, String surname, String email, String password, int publicKey, int n) {
         String sql = getRegisterNewUserQueryString();
         try (PreparedStatement p = connection.prepareStatement(sql)) {
             p.setString(1, name);
@@ -119,6 +119,7 @@ public abstract class Repository {
             p.setString(3, email);
             p.setString(4, PasswordSecurity.createHash(password));
             p.setInt(5, publicKey);
+            p.setInt(6, n);
             p.execute();
         } catch (SQLException | InvalidKeySpecException | NoSuchAlgorithmException e) {
             e.printStackTrace();
@@ -165,22 +166,22 @@ public abstract class Repository {
         return emailList;
     }
 
-    public UserPublicKey getUserPublicKey(String email) {
+    public PublicKey getUserPublicKey(String email) {
         String sql = getUserPublicKetQueryString();
-        UserPublicKey publicKey;
+        PublicKey publicKey;
 
         try (PreparedStatement p = connection.prepareStatement(sql)) {
             p.setString(1, email);
             ResultSet res = p.executeQuery();
 
             if(res.next()) {
-                publicKey = new UserPublicKey(res.getInt(1));
+                publicKey = new PublicKey(res.getInt(1), res.getInt(2));
             }
             else
-                publicKey = new UserPublicKey(-1);
+                publicKey = new PublicKey(-1, -1);
         } catch (SQLException e) {
             e.printStackTrace();
-            publicKey = new UserPublicKey(-1);
+            publicKey = new PublicKey(-1, -1);
         }
 
         return publicKey;

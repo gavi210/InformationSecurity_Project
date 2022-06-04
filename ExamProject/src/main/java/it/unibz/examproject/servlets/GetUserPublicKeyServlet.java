@@ -1,10 +1,7 @@
 package it.unibz.examproject.servlets;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.unibz.examproject.model.Email;
-import it.unibz.examproject.model.UserPublicKey;
-import it.unibz.examproject.util.Authentication;
-import it.unibz.examproject.util.JsonOperations;
+import it.unibz.examproject.model.PublicKey;
 import it.unibz.examproject.util.UserInputValidator;
 import it.unibz.examproject.util.db.PostgresRepository;
 import it.unibz.examproject.util.db.Repository;
@@ -13,13 +10,10 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 @WebServlet("/GetUserPublicKeyServlet")
@@ -55,7 +49,7 @@ public class GetUserPublicKeyServlet extends HttpServlet {
         String targetEmail = request.getParameter("email");
 
         if(UserInputValidator.isEmailAddressValid(targetEmail)) {
-            UserPublicKey publicKey = repository.getUserPublicKey(targetEmail);
+            PublicKey publicKey = repository.getUserPublicKey(targetEmail);
 
 
             String jsonOutput = new ObjectMapper().writeValueAsString(publicKey);

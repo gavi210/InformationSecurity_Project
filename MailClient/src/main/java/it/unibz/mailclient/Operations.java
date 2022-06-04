@@ -3,17 +3,21 @@ package it.unibz.mailclient;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.unibz.mailclient.model.*;
+import it.unibz.mailclient.rsa.RSA;
+import it.unibz.mailclient.rsa.RSAKeyPair;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class Operations {
     private final CookieManager cookieManager;
+    private final Map<String, Integer> privateKeys;
     private final String urlString;
 
     private HttpURLConnection con;
@@ -23,6 +27,7 @@ public class Operations {
     public Operations(String urlString) {
         this.urlString = urlString;
         this.cookieManager = new CookieManager();
+        this.privateKeys = new HashMap<>();
     }
 
     public void login(String mail, String password) throws IOException {
@@ -37,17 +42,22 @@ public class Operations {
         refreshCookies();
     }
 
-
-
-    public void register(String name, String surname, String mail, String password, int userPublicKey) throws IOException {
+    public void register(String name, String surname, String mail, String password) throws IOException {
         getNewPostConnection(urlString + "/RegisterServlet");
 
         addCookiesToRequest();
 
-        Registration registration = new Registration(name, surname, mail, password, userPublicKey);
+
+        RSAKeyPair keyPair = new RSA().generateKeys();
+
+        Registration registration = new Registration(name, surname, mail, password, keyPair.getPublicKey().getVal());
         writeRequestBody(registration);
 
         refreshCookies();
+
+        // update and insert the new private key only if the registration process goes good
+        if (this.con.getResponseCode() == HttpURLConnection.HTTP_OK)
+            this.privateKeys.put(mail, keyPair.getPrivateKey().getVal());
     }
 
     public void sendEmail(String receiver, String subject, String body) throws IOException {
@@ -110,6 +120,10 @@ public class Operations {
         getNewPostConnection(urlString + "/ResetDatabaseServlet");
         // consume the response code, it ensures that the request is sent and processed by the server
         submitRequest();
+    }
+
+    public Map<String, Integer> getPrivateKeys() {
+        return privateKeys;
     }
 
     private void submitRequest() throws IOException {
