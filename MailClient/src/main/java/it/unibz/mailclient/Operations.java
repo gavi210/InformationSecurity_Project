@@ -10,6 +10,7 @@ import it.unibz.mailclient.model.Registration;
 import it.unibz.mailclient.rsa.RSA;
 import it.unibz.mailclient.rsa.RSAKey;
 import it.unibz.mailclient.rsa.RSAKeyPair;
+import org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -72,7 +73,7 @@ public class Operations {
         }
     }
 
-    public void sendEmail(String receiver, String subject, String body) throws IOException {
+    public void sendEmail(String receiver, String subject, String body, boolean toBeSigned) throws IOException {
 
         if(isNull(receiver) || isNull(subject) || isNull(body))
             throw new RuntimeException("Invalid Input");
@@ -84,11 +85,17 @@ public class Operations {
 
         String ciphertext = Arrays.toString(this.rsa.encrypt(body, receiverPublicKey.getVal(), receiverPublicKey.getN()));
 
+        String signature = null;
+        if(toBeSigned) {
+            String hash = DigestUtils.sha256Hex(body);
+            signature = Arrays.toString(this.rsa.encrypt(hash, receiverPublicKey.getVal(), receiverPublicKey.getN()));
+        }
+
         getNewPostConnection(urlString + "/SendMailServlet");
 
         addCookiesToRequest();
 
-        EmailForSendMailRequest email = new EmailForSendMailRequest(receiver, subject, ciphertext);
+        EmailForSendMailRequest email = new EmailForSendMailRequest(receiver, subject, ciphertext, signature);
         writeRequestBody(email);
 
         refreshCookies();
@@ -113,12 +120,31 @@ public class Operations {
                 int[] cipherBody = mapper.readValue(mail.getBody(), new TypeReference<int[]>() {});
 
                 String decryptedBody = this.rsa.decrypt(cipherBody, currentUserKey.getVal(), currentUserKey.getN());
-                decryptedEmails.add(new Email(mail.getSender(), mail.getReceiver(), mail.getSubject(), decryptedBody, mail.getTimestamp()));
+                decryptedEmails.add(new Email(mail.getSender(), mail.getReceiver(), mail.getSubject(), decryptedBody, mail.getTimestamp(), mail.getSignature()));
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
         });
-        return decryptedEmails;
+        List<Email> matchingSignatureEmails = new LinkedList<>();
+        decryptedEmails.forEach(mail -> {
+            try {
+                if(isNull(mail.getSignature()))
+                    matchingSignatureEmails.add(mail);
+                else {
+                    int[] cipherSignature = new ObjectMapper().readValue(mail.getSignature(), new TypeReference<int[]>() {
+                    });
+                    String decryptedSignature = this.rsa.decrypt(cipherSignature, currentUserKey.getVal(), currentUserKey.getN());
+                    String hashedBody = DigestUtils.sha256Hex(mail.getBody());
+                    if (hashedBody.equals(decryptedSignature))
+                        matchingSignatureEmails.add(new Email(mail.getSender(), mail.getReceiver(), mail.getSubject(), mail.getBody(), mail.getTimestamp(), decryptedSignature));
+
+                }
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+
+        });
+        return matchingSignatureEmails;
     }
 
     public RSAKey getUserPublicKey(String userEmail) throws IOException {
@@ -132,18 +158,6 @@ public class Operations {
         String body = new String(this.con.getInputStream().readAllBytes());
 
         return new ObjectMapper().readValue(body, RSAKey.class);
-    }
-
-    public List<Email> getSentEmails() throws IOException {
-        getNewGetRequest(urlString + "/GetSentMailServlet");
-
-        addCookiesToRequest();
-
-        refreshCookies();
-
-        String body = new String(this.con.getInputStream().readAllBytes());
-
-        return new ObjectMapper().readValue(body, new TypeReference<List<Email>>() {});
     }
 
     public void logout() throws IOException {

@@ -28,7 +28,9 @@ public class SendEmailOperationTest {
 
     @Test
     public void unauthorizedResponseIfNotLoggedIn() throws IOException {
-        this.operations.sendEmail(mail, sampleSubject, sampleBody);
+        this.operations.register(name, surname, mail, password);
+        this.operations.logout();
+        this.operations.sendEmail(mail, sampleSubject, sampleBody, false);
 
         assertEquals(401, this.operations.getCon().getResponseCode());
     }
@@ -36,7 +38,7 @@ public class SendEmailOperationTest {
     @Test
     public void testMailIsCorrectlySent() throws IOException {
         this.operations.register(name, surname, mail, password);
-        this.operations.sendEmail(mail, sampleSubject, sampleBody);
+        this.operations.sendEmail(mail, sampleSubject, sampleBody, true);
         assertEquals(200, this.operations.getCon().getResponseCode());
     }
 
@@ -44,8 +46,8 @@ public class SendEmailOperationTest {
     public void testSendingTwoMailsOneAfterTheOther() throws IOException {
 
         this.operations.register(name, surname, mail, password);
-        this.operations.sendEmail(mail, sampleSubject, sampleBody);
-        this.operations.sendEmail(mail, sampleSubject, sampleBody);
+        this.operations.sendEmail(mail, sampleSubject, sampleBody, false);
+        this.operations.sendEmail(mail, sampleSubject, sampleBody, false);
         assertEquals(200, this.operations.getCon().getResponseCode());
     }
 

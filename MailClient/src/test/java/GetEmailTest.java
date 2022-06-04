@@ -29,7 +29,7 @@ public class GetEmailTest {
     @Test
     public void testGetInboxEmails() throws IOException {
         this.operations.register(name, surname, mail, password);
-        this.operations.sendEmail(mail, sampleSubject, sampleBody);
+        this.operations.sendEmail(mail, sampleSubject, sampleBody, false);
 
         assertEquals(1, this.operations.getInboxEmails().size());
     }
@@ -37,9 +37,9 @@ public class GetEmailTest {
     @Test
     public void testGetSentEmails() throws IOException {
         this.operations.register(name, surname, mail, password);
-        this.operations.sendEmail(mail, sampleSubject, sampleBody);
+        this.operations.sendEmail(mail, sampleSubject, sampleBody, true);
 
-        assertEquals(1, this.operations.getSentEmails().size());
+        assertEquals(1, this.operations.getInboxEmails().size());
     }
 
     @Test
@@ -54,7 +54,7 @@ public class GetEmailTest {
         this.operations.logout();
 
         this.operations.login(mail, password);
-        this.operations.sendEmail(mail_receiver, sampleSubject, sampleBody);
+        this.operations.sendEmail(mail_receiver, sampleSubject, sampleBody, false);
 
         this.operations.logout();
         this.operations.login(mail_receiver, password_receiver);
@@ -64,5 +64,12 @@ public class GetEmailTest {
         assertEquals(sampleBody, inboxReceiver.get(0).getBody());
     }
 
+    @Test
+    public void emailsWithSignatureAreCorrectlyDeserialized() throws IOException {
+        this.operations.register(name, surname, mail, password);
+        this.operations.sendEmail(mail, sampleSubject, sampleBody, true);
+
+        System.out.println(this.operations.getInboxEmails().get(0).getSignature());
+    }
 
 }
