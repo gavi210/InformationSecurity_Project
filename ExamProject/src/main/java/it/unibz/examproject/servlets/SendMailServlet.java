@@ -49,7 +49,7 @@ public class SendMailServlet extends HttpServlet {
 		}
     }
 
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		response.setContentType("text/html");
 
 		HttpSession session = request.getSession(false);

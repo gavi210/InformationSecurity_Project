@@ -24,8 +24,8 @@ public class SQLServerRepository extends Repository{
 
     @Override
     protected String getRegisterNewUserQueryString() {
-        return "INSERT INTO [user] ( name, surname, email, password ) "
-                + "VALUES ( ?, ?, ?, ? )";
+        return "INSERT INTO [user] ( name, surname, email, password, public_key ) "
+                + "VALUES ( ?, ?, ?, ?, ? )";
     }
 
     @Override

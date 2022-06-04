@@ -1,6 +1,7 @@
 package it.unibz.examproject.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 public class Registration {
 
@@ -8,13 +9,16 @@ public class Registration {
     private final String surname;
     private final String email;
     private final String password;
+    private final int publicKey;
 
     public Registration(@JsonProperty("name") String name, @JsonProperty("surname") String surname,
-                        @JsonProperty("email") String email, @JsonProperty("password") String password) {
+                        @JsonProperty("email") String email, @JsonProperty("password") String password,
+                        @JsonProperty("publicKey") int publicKey) {
         this.name = name;
         this.surname = surname;
         this.email = email;
         this.password = password;
+        this.publicKey = publicKey;
     }
 
     public String getName() {
@@ -31,5 +35,9 @@ public class Registration {
 
     public String getPassword() {
         return password;
+    }
+
+    public int getPublicKey() {
+        return publicKey;
     }
 }

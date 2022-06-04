@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class JsonOperations {
     public static <T> T getObject(String jsonString, Class<T> inputClass) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
-        return (T) mapper.readValue(jsonString, inputClass);
+        return mapper.readValue(jsonString, inputClass);
     }
 }
 

@@ -63,7 +63,8 @@ public class RegisterServlet extends HttpServlet {
                 Registration registration = JsonOperations.getObject(requestBody, Registration.class);
 
                 if (UserInputValidator.isNameValid(registration.getName()) && UserInputValidator.isSurnameValid(registration.getSurname())
-                        && UserInputValidator.isEmailAddressValid(registration.getEmail()) && UserInputValidator.isPasswordValid(registration.getPassword())) {
+                        && UserInputValidator.isEmailAddressValid(registration.getEmail()) && UserInputValidator.isPasswordValid(registration.getPassword())
+                        && UserInputValidator.isPublicKeyValid(registration.getPublicKey())) {
                     boolean emailAlreadyInUse = repository.emailAlreadyInUse(registration.getEmail());
 
                     if (emailAlreadyInUse) {
@@ -76,7 +77,8 @@ public class RegisterServlet extends HttpServlet {
 
                         Authentication.setUserSession(newSession, registration.getEmail());
 
-                        repository.registerNewUser(registration.getName(), registration.getSurname(), registration.getEmail(), registration.getPassword());
+                        repository.registerNewUser(registration.getName(), registration.getSurname(), registration.getEmail(),
+                                registration.getPassword(), registration.getPublicKey());
                     }
                 } else {
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Check input correctness");

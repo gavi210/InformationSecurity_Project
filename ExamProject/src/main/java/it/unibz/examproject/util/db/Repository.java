@@ -108,13 +108,14 @@ public abstract class Repository {
         }
     }
 
-    public void registerNewUser(String name, String surname, String email, String password) {
+    public void registerNewUser(String name, String surname, String email, String password, int publicKey) {
         String sql = getRegisterNewUserQueryString();
         try (PreparedStatement p = connection.prepareStatement(sql)) {
             p.setString(1, name);
             p.setString(2, surname);
             p.setString(3, email);
             p.setString(4, PasswordSecurity.createHash(password));
+            p.setInt(5, publicKey);
             p.execute();
         } catch (SQLException | InvalidKeySpecException | NoSuchAlgorithmException e) {
             e.printStackTrace();

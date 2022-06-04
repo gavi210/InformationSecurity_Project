@@ -56,4 +56,8 @@ public class UserInputValidator {
     public static boolean isMailBodyValid(String body) {
         return body != null && body.length() != 1000;
     }
+
+    public static boolean isPublicKeyValid(int publicKey) {
+        return publicKey > 0;
+    }
 }
