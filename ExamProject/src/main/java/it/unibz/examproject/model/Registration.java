@@ -1,7 +1,6 @@
 package it.unibz.examproject.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 public class Registration {
 

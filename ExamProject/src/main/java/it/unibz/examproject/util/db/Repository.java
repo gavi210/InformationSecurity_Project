@@ -7,7 +7,9 @@ import org.apache.commons.codec.DecoderException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 public abstract class Repository {
 

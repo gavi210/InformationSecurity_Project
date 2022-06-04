@@ -2,7 +2,7 @@ package it.unibz.examproject.servlets;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.unibz.examproject.model.Email;
-import it.unibz.examproject.util.*;
+import it.unibz.examproject.util.Authentication;
 import it.unibz.examproject.util.db.PostgresRepository;
 import it.unibz.examproject.util.db.Repository;
 import it.unibz.examproject.util.db.SQLServerRepository;

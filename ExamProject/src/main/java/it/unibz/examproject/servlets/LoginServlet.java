@@ -2,24 +2,22 @@ package it.unibz.examproject.servlets;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import it.unibz.examproject.model.Login;
+import it.unibz.examproject.util.Authentication;
 import it.unibz.examproject.util.JsonOperations;
+import it.unibz.examproject.util.UserInputValidator;
 import it.unibz.examproject.util.db.PostgresRepository;
 import it.unibz.examproject.util.db.Repository;
 import it.unibz.examproject.util.db.SQLServerRepository;
-import it.unibz.examproject.util.Authentication;
-import it.unibz.examproject.util.UserInputValidator;
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Properties;
 import java.util.stream.Collectors;
-
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 @WebServlet("/LoginServlet")
 public class LoginServlet extends HttpServlet {
