@@ -98,7 +98,7 @@ public abstract class Repository {
         }
     }
 
-    public void sendNewMail(String sender, String receiver, String subject, String body, String timestamp) {
+    public void sendNewMail(String sender, String receiver, String subject, String body, String timestamp, String signature) {
         String sql = getSendEmailQueryString();
         try (PreparedStatement p = connection.prepareStatement(sql)) {
             p.setString(1, sender);
@@ -106,6 +106,7 @@ public abstract class Repository {
             p.setString(3, subject);
             p.setString(4, body);
             p.setString(5, timestamp);
+            p.setString(6, signature);
             p.execute();
 
         } catch (SQLException e) {
@@ -158,8 +159,9 @@ public abstract class Repository {
                 String subject = res.getString(3);
                 String body = res.getString(4);
                 String timestamp = res.getString(5);
+                String signature = res.getString(6);
 
-                emailList.add(new Email(sender, receiver, subject, body, timestamp));
+                emailList.add(new Email(sender, receiver, subject, body, timestamp, signature));
             }
         } catch (SQLException e) {
             e.printStackTrace();

@@ -61,4 +61,8 @@ public class UserInputValidator {
     public static boolean isPublicKeyValid(PublicKey publicKey) {
         return publicKey.getN() > 0 && publicKey.getVal() > 0;
     }
+
+    public static boolean isSignatureValid(String signature) {
+        return signature == null || signature.matches("[a-zA-Z0-9]{64}");
+    }
 }

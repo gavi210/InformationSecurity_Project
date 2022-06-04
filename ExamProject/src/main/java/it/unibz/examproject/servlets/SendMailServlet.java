@@ -67,9 +67,9 @@ public class SendMailServlet extends HttpServlet {
 				RequestSanitizer.removeAllAttributes(request);
 
 				if(UserInputValidator.isEmailAddressValid(mail.getReceiver()) && UserInputValidator.isMailSubjectValid(mail.getSubject())
-						&& UserInputValidator.isMailBodyValid(mail.getBody()))
+						&& UserInputValidator.isMailBodyValid(mail.getBody()) && UserInputValidator.isSignatureValid(mail.getSignature()))
 					repository.sendNewMail(sender, mail.getReceiver(), mail.getSubject(), mail.getBody(),
-							new Date(System.currentTimeMillis()).toInstant().toString());
+							new Date(System.currentTimeMillis()).toInstant().toString(), mail.getSignature());
 
 				else {
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Check input correctness");

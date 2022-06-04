@@ -9,18 +9,26 @@ public class Email {
     private final String subject;
     private final String body;
     private final String timestamp;
+    private final String signature;
 
     public Email(
             @JsonProperty("sender") String sender,
             @JsonProperty("receiver") String receiver,
             @JsonProperty("subject") String subject,
             @JsonProperty("body") String body,
-            @JsonProperty("timestamp") String timestamp) {
+            @JsonProperty("timestamp") String timestamp,
+            @JsonProperty("signature") String signature
+            ) {
         this.sender = sender;
         this.receiver = receiver;
         this.subject = subject;
         this.body = body;
         this.timestamp = timestamp;
+        this.signature = signature;
+    }
+
+    public String getSignature() {
+        return signature;
     }
 
     public String getSender() {

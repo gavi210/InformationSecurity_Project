@@ -59,7 +59,6 @@ public class RegisterServlet extends HttpServlet {
 
             try {
                 String requestBody = request.getReader().lines().collect(Collectors.joining(""));
-                System.out.println(requestBody);
                 Registration registration = JsonOperations.getObject(requestBody, Registration.class);
 
                 System.out.println(registration.toString());

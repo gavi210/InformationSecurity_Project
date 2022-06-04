@@ -13,13 +13,13 @@ public class SQLServerRepository extends Repository{
 
     @Override
     protected String getSendEmailQueryString() {
-        return "INSERT INTO mail ( sender, receiver, subject, body, [time] ) "
-                + "VALUES ( ?, ?, ?, ?, ? )";
+        return "INSERT INTO mail ( sender, receiver, subject, body, [time], signature ) "
+                + "VALUES ( ?, ?, ?, ?, ?, ? )";
     }
 
     @Override
     protected String getIncomingEmailsQueryString() {
-        return "SELECT sender, receiver, subject, body, [time] FROM mail WHERE receiver = ? ORDER BY [time] DESC";
+        return "SELECT sender, receiver, subject, body, [time], signature FROM mail WHERE receiver = ? ORDER BY [time] DESC";
     }
 
     @Override
@@ -30,7 +30,7 @@ public class SQLServerRepository extends Repository{
 
     @Override
     protected String getSentEmailsQueryString() {
-        return "SELECT sender, receiver, subject, body, [time] FROM mail WHERE sender = ? ORDER BY [time] DESC";
+        return "SELECT sender, receiver, subject, body, [time], signature FROM mail WHERE sender = ? ORDER BY [time] DESC";
     }
 
     @Override
