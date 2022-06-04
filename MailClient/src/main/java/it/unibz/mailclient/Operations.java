@@ -3,15 +3,20 @@ package it.unibz.mailclient;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.unibz.mailclient.model.*;
+import it.unibz.mailclient.model.Email;
+import it.unibz.mailclient.model.EmailForSendMailRequest;
+import it.unibz.mailclient.model.Login;
+import it.unibz.mailclient.model.Registration;
 import it.unibz.mailclient.rsa.RSA;
 import it.unibz.mailclient.rsa.RSAKey;
 import it.unibz.mailclient.rsa.RSAKeyPair;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.*;
+import java.net.CookieManager;
+import java.net.HttpCookie;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 

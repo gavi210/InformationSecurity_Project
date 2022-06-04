@@ -2,7 +2,10 @@ import it.unibz.mailclient.ParameterStringBuilder;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.*;
+import java.net.CookieManager;
+import java.net.HttpCookie;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
