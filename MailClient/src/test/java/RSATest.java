@@ -21,19 +21,6 @@ public class RSATest {
     }
 
     @Test
-    public void encryptMessageTest() {
-
-        String text = "security";
-        int e = 3;
-        int n = 391;
-        int[] referenceArray = {212, 125, 27, 268, 358, 338, 180, 376};
-
-        int[] encryption = rsa.encrypt(text,e,n);
-
-        assertArrayEquals(encryption, referenceArray);
-    }
-
-    @Test
     public void decryptMessage() {
         String plaintext = "aaaa";
 

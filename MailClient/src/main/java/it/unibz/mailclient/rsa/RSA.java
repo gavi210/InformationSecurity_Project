@@ -74,20 +74,6 @@ public class RSA {
 		return ciphertext;
 	}
 
-	public int[] encrypt(int[] plaintext, int e, int n){
-
-		//for each number from the plaintext compute  ( pow(number, e) ) mod n
-		int[] ciphertext = new int[plaintext.length];
-		for (int i = 0; i < plaintext.length; i++) {
-			BigInteger tmp = BigInteger.valueOf(plaintext[i]);
-			BigInteger tmp_pow = tmp.pow(e);
-
-			ciphertext[i] = tmp_pow.mod(BigInteger.valueOf(n)).intValue();
-		}
-
-		return ciphertext;
-	}
-
 	public String decrypt(int[] ciphertext, int d, int n){
 
 		// for each number in the ciphertext compute ( pow(number, d) ) mod n
