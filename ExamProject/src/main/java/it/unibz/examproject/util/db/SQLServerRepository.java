@@ -37,4 +37,9 @@ public class SQLServerRepository extends Repository{
     protected String getResetDatabaseQueryString() {
         return "DELETE FROM mail; DELETE from [user]";
     }
+
+    @Override
+    protected String getUserPublicKetQueryString() {
+        return "SELECT public_key from [user] WHERE email = ?";
+    }
 }

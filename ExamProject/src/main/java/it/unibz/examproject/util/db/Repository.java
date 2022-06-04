@@ -1,6 +1,7 @@
 package it.unibz.examproject.util.db;
 
 import it.unibz.examproject.model.Email;
+import it.unibz.examproject.model.UserPublicKey;
 import org.apache.commons.codec.DecoderException;
 
 import java.security.NoSuchAlgorithmException;
@@ -61,6 +62,8 @@ public abstract class Repository {
     protected abstract String getSentEmailsQueryString();
 
     protected abstract String getResetDatabaseQueryString();
+
+    protected abstract String getUserPublicKetQueryString();
 
     public boolean emailAlreadyInUse(String email) {
         String sql = getExistsUserByEmailQueryString();
@@ -160,5 +163,26 @@ public abstract class Repository {
         }
 
         return emailList;
+    }
+
+    public UserPublicKey getUserPublicKey(String email) {
+        String sql = getUserPublicKetQueryString();
+        UserPublicKey publicKey;
+
+        try (PreparedStatement p = connection.prepareStatement(sql)) {
+            p.setString(1, email);
+            ResultSet res = p.executeQuery();
+
+            if(res.next()) {
+                publicKey = new UserPublicKey(res.getInt(1));
+            }
+            else
+                publicKey = new UserPublicKey(-1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            publicKey = new UserPublicKey(-1);
+        }
+
+        return publicKey;
     }
 }

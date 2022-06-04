@@ -76,6 +76,19 @@ public class Operations {
         return new ObjectMapper().readValue(body, new TypeReference<List<Email>>() {});
     }
 
+    public List<Email> getUserPublicKey(String userEmail) throws IOException {
+        String parametrizedUrl = String.format(urlString + "/GetUserPublicKeyServlet?email=%s", userEmail);
+        getNewGetRequest(parametrizedUrl);
+
+        addCookiesToRequest();
+
+        refreshCookies();
+
+        String body = new String(this.con.getInputStream().readAllBytes());
+
+        return new ObjectMapper().readValue(body, new TypeReference<List<Email>>() {});
+    }
+
     public List<Email> getSentEmails() throws IOException {
         getNewGetRequest(urlString + "/GetSentMailServlet");
 
