@@ -4,8 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.net.*;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -16,6 +14,7 @@ public class SendEmailOperationTest {
     private final String surname = "Cena";
     private final String mail = "john@gmail.com";
     private final String password = "YouCantSeeMe1!";
+    private final int userPublicKey = 1;
     private final String baseUrl = "http://localhost:8080/ExamProject_war_exploded";
     private final String sampleSubject = "Hello To Myself";
     private final String sampleBody = "Hello Again";
@@ -37,7 +36,7 @@ public class SendEmailOperationTest {
 
     @Test
     public void testMailIsCorrectlySent() throws IOException {
-        this.operations.register(name, surname, mail, password);
+        this.operations.register(name, surname, mail, password, userPublicKey);
         this.operations.sendEmail(mail, sampleSubject, sampleBody);
         assertEquals(200, this.operations.getCon().getResponseCode());
     }
@@ -45,7 +44,7 @@ public class SendEmailOperationTest {
     @Test
     public void testSendingTwoMailsOneAfterTheOther() throws IOException {
 
-        this.operations.register(name, surname, mail, password);
+        this.operations.register(name, surname, mail, password, userPublicKey);
         this.operations.sendEmail(mail, sampleSubject, sampleBody);
         this.operations.sendEmail(mail, sampleSubject, sampleBody);
         assertEquals(200, this.operations.getCon().getResponseCode());
@@ -53,7 +52,7 @@ public class SendEmailOperationTest {
 
     @Test
     public void cookieIsChangedAfterLogoutAndLoginWithSameAccount() throws IOException {
-        this.operations.register(name, surname, mail, password);
+        this.operations.register(name, surname, mail, password, userPublicKey);
         String initialCookieValue = this.operations.getCookieManager().getCookieStore().getCookies().get(0).getValue();
         this.operations.logout();
 
@@ -63,7 +62,7 @@ public class SendEmailOperationTest {
 
     @Test
     public void cookieIsNotChangedOnFailedLoginAttempt() throws IOException {
-        this.operations.register(name, surname, mail, password);
+        this.operations.register(name, surname, mail, password, userPublicKey);
         String initialCookieValue = this.operations.getCookieManager().getCookieStore().getCookies().get(0).getValue();
         // this.operations.logout();
 

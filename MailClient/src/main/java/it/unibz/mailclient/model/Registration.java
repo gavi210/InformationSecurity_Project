@@ -9,12 +9,14 @@ public class Registration {
     private final String surname;
     private final String email;
     private final String password;
+    private final int publicKey;
 
-    public Registration(String name, String surname, String email, String password) {
+    public Registration(String name, String surname, String email, String password, int publicKey) {
         this.name = name;
         this.surname = surname;
         this.email = email;
         this.password = password;
+        this.publicKey = publicKey;
     }
 
     public String getName() {
@@ -31,6 +33,10 @@ public class Registration {
 
     public String getPassword() {
         return password;
+    }
+
+    public int getPublicKey() {
+        return publicKey;
     }
 
     @Override

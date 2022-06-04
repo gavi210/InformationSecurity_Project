@@ -6,12 +6,9 @@ import it.unibz.mailclient.model.*;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -42,12 +39,12 @@ public class Operations {
 
 
 
-    public void register(String name, String surname, String mail, String password) throws IOException {
+    public void register(String name, String surname, String mail, String password, int userPublicKey) throws IOException {
         getNewPostConnection(urlString + "/RegisterServlet");
 
         addCookiesToRequest();
 
-        Registration registration = new Registration(name, surname, mail, password);
+        Registration registration = new Registration(name, surname, mail, password, userPublicKey);
         writeRequestBody(registration);
 
         refreshCookies();
@@ -76,7 +73,7 @@ public class Operations {
         return new ObjectMapper().readValue(body, new TypeReference<List<Email>>() {});
     }
 
-    public List<Email> getUserPublicKey(String userEmail) throws IOException {
+    public UserPublicKey getUserPublicKey(String userEmail) throws IOException {
         String parametrizedUrl = String.format(urlString + "/GetUserPublicKeyServlet?email=%s", userEmail);
         getNewGetRequest(parametrizedUrl);
 
@@ -86,7 +83,7 @@ public class Operations {
 
         String body = new String(this.con.getInputStream().readAllBytes());
 
-        return new ObjectMapper().readValue(body, new TypeReference<List<Email>>() {});
+        return new ObjectMapper().readValue(body, UserPublicKey.class);
     }
 
     public List<Email> getSentEmails() throws IOException {

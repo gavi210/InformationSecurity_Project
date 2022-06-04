@@ -12,6 +12,7 @@ public class GetEmailTest {
     private final String surname = "Cena";
     private final String mail = "john@gmail.com";
     private final String password = "YouCantSeeMe1!";
+    private final int userPublicKey = 1;
     private final String baseUrl = "http://localhost:8080/ExamProject_war_exploded";
     private final String sampleSubject = "Hello To Myself";
     private final String sampleBody = "Hello Again";
@@ -25,7 +26,7 @@ public class GetEmailTest {
 
     @Test
     public void testGetInboxEmails() throws IOException {
-        this.operations.register(name, surname, mail, password);
+        this.operations.register(name, surname, mail, password, userPublicKey);
         this.operations.sendEmail(mail, sampleSubject, sampleBody);
 
         assertEquals(1, this.operations.getInboxEmails().size());
@@ -33,7 +34,7 @@ public class GetEmailTest {
 
     @Test
     public void testGetSentEmails() throws IOException {
-        this.operations.register(name, surname, mail, password);
+        this.operations.register(name, surname, mail, password, userPublicKey);
         this.operations.sendEmail(mail, sampleSubject, sampleBody);
 
         assertEquals(1, this.operations.getSentEmails().size());
