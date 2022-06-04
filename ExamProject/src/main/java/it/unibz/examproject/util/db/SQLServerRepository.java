@@ -24,7 +24,7 @@ public class SQLServerRepository extends Repository{
 
     @Override
     protected String getRegisterNewUserQueryString() {
-        return "INSERT INTO [user] ( name, surname, email, password, d, n ) "
+        return "INSERT INTO [user] ( name, surname, email, password, val, n ) "
                 + "VALUES ( ?, ?, ?, ?, ?, ? )";
     }
 
@@ -40,6 +40,6 @@ public class SQLServerRepository extends Repository{
 
     @Override
     protected String getUserPublicKetQueryString() {
-        return "SELECT d, n FROM [user] WHERE email = ?";
+        return "SELECT val, n FROM [user] WHERE email = ?";
     }
 }

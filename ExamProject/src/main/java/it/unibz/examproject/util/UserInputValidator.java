@@ -59,6 +59,6 @@ public class UserInputValidator {
     }
 
     public static boolean isPublicKeyValid(PublicKey publicKey) {
-        return publicKey.getN() > 0 && publicKey.getD() > 0;
+        return publicKey.getN() > 0 && publicKey.getVal() > 0;
     }
 }

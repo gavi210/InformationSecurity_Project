@@ -80,7 +80,7 @@ public class RegisterServlet extends HttpServlet {
                         Authentication.setUserSession(newSession, registration.getEmail());
 
                         repository.registerNewUser(registration.getName(), registration.getSurname(), registration.getEmail(),
-                                registration.getPassword(), registration.getPublicKey().getD(), registration.getPublicKey().getN());
+                                registration.getPassword(), registration.getPublicKey().getVal(), registration.getPublicKey().getN());
                     }
                 } else {
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Check input correctness");

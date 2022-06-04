@@ -63,4 +63,6 @@ public class GetEmailTest {
         assertEquals(1, inboxReceiver.size());
         assertEquals(sampleBody, inboxReceiver.get(0).getBody());
     }
+
+
 }

@@ -3,19 +3,19 @@ package it.unibz.examproject.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class PublicKey {
-    private final int d;
+    private final int val;
     private final int n;
 
-    public int getD() {
-        return d;
+    public int getVal() {
+        return val;
     }
 
     public int getN() {
         return n;
     }
 
-    public PublicKey(@JsonProperty("d") int d, @JsonProperty("n") int n) {
-        this.d = d;
+    public PublicKey(@JsonProperty("val") int d, @JsonProperty("n") int n) {
+        this.val = d;
         this.n = n;
     }
 }
