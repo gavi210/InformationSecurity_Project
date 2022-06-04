@@ -5,9 +5,6 @@ import org.passay.*;
 
 import java.util.Arrays;
 
-/**
- * refactor on InputValidator so that it offers static methods that could be invoked. No need for class instantiation yet.
- */
 public class UserInputValidator {
 
     public static boolean isEmailAddressValid(String emailAddress) {
@@ -54,6 +51,6 @@ public class UserInputValidator {
     }
 
     public static boolean isMailBodyValid(String body) {
-        return body != null && body.length() != 1000;
+        return body != null && body.length() < 1000;
     }
 }
