@@ -1,9 +1,11 @@
 package it.unibz.mailclient;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.unibz.mailclient.model.*;
 import it.unibz.mailclient.rsa.RSA;
+import it.unibz.mailclient.rsa.RSAKey;
 import it.unibz.mailclient.rsa.RSAKeyPair;
 
 import java.io.DataOutputStream;
@@ -11,23 +13,25 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static java.util.Objects.isNull;
 
 public class Operations {
     private final CookieManager cookieManager;
-    private final Map<String, Integer> privateKeys;
+    private final Map<String, RSAKey> privateKeys;
     private final String urlString;
+    private final RSA rsa;
+
+    private String currentUserEmail;
 
     private HttpURLConnection con;
-
-    public enum GetEmailsOperation { inbox, sent }
 
     public Operations(String urlString) {
         this.urlString = urlString;
         this.cookieManager = new CookieManager();
         this.privateKeys = new HashMap<>();
+        this.rsa = new RSA();
     }
 
     public void login(String mail, String password) throws IOException {
@@ -40,6 +44,9 @@ public class Operations {
 
         submitRequest();
         refreshCookies();
+
+        if(this.con.getResponseCode() == HttpURLConnection.HTTP_OK)
+            this.currentUserEmail = mail;
     }
 
     public void register(String name, String surname, String mail, String password) throws IOException {
@@ -47,25 +54,36 @@ public class Operations {
 
         addCookiesToRequest();
 
-
         RSAKeyPair keyPair = new RSA().generateKeys();
 
-        Registration registration = new Registration(name, surname, mail, password, keyPair.getPublicKey().getVal());
+        Registration registration = new Registration(name, surname, mail, password, keyPair.getPublicKey());
         writeRequestBody(registration);
 
         refreshCookies();
 
-        // update and insert the new private key only if the registration process goes good
-        if (this.con.getResponseCode() == HttpURLConnection.HTTP_OK)
-            this.privateKeys.put(mail, keyPair.getPrivateKey().getVal());
+        if (this.con.getResponseCode() == HttpURLConnection.HTTP_OK) {
+            this.privateKeys.put(mail, keyPair.getPrivateKey());
+            this.currentUserEmail = mail;
+        }
     }
 
     public void sendEmail(String receiver, String subject, String body) throws IOException {
+
+        if(isNull(receiver) || isNull(subject) || isNull(body))
+            throw new RuntimeException("Invalid Input");
+
+        RSAKey receiverPublicKey = this.getUserPublicKey(receiver);
+
+        if(isKeyInvalid(receiverPublicKey))
+            throw new RuntimeException("Receiver Key is not valid");
+
+        String ciphertext = Arrays.toString(this.rsa.encrypt(body, receiverPublicKey.getVal(), receiverPublicKey.getN()));
+
         getNewPostConnection(urlString + "/SendMailServlet");
 
         addCookiesToRequest();
 
-        EmailForSendMailRequest email = new EmailForSendMailRequest(receiver, subject, body);
+        EmailForSendMailRequest email = new EmailForSendMailRequest(receiver, subject, ciphertext);
         writeRequestBody(email);
 
         refreshCookies();
@@ -79,11 +97,26 @@ public class Operations {
         refreshCookies();
 
         String body = new String(this.con.getInputStream().readAllBytes());
+        List<Email> encryptedEmails = new ObjectMapper().readValue(body, new TypeReference<List<Email>>() {});
 
-        return new ObjectMapper().readValue(body, new TypeReference<List<Email>>() {});
+        List<Email> decryptedEmails = new LinkedList<>();
+        RSAKey currentUserKey = this.privateKeys.get(this.currentUserEmail);
+
+        ObjectMapper mapper = new ObjectMapper();
+        encryptedEmails.forEach(mail -> {
+            try {
+                int[] cipherBody = mapper.readValue(mail.getBody(), new TypeReference<int[]>() {});
+
+                String decryptedBody = this.rsa.decrypt(cipherBody, currentUserKey.getVal(), currentUserKey.getN());
+                decryptedEmails.add(new Email(mail.getSender(), mail.getReceiver(), mail.getSubject(), decryptedBody, mail.getTimestamp()));
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+        });
+        return decryptedEmails;
     }
 
-    public UserPublicKey getUserPublicKey(String userEmail) throws IOException {
+    public RSAKey getUserPublicKey(String userEmail) throws IOException {
         String parametrizedUrl = String.format(urlString + "/GetUserPublicKeyServlet?email=%s", userEmail);
         getNewGetRequest(parametrizedUrl);
 
@@ -93,7 +126,7 @@ public class Operations {
 
         String body = new String(this.con.getInputStream().readAllBytes());
 
-        return new ObjectMapper().readValue(body, UserPublicKey.class);
+        return new ObjectMapper().readValue(body, RSAKey.class);
     }
 
     public List<Email> getSentEmails() throws IOException {
@@ -114,6 +147,10 @@ public class Operations {
         addCookiesToRequest();
 
         removeOldCookies();
+
+        if(this.con.getResponseCode() == HttpURLConnection.HTTP_OK) {
+            this.currentUserEmail = null;
+        }
     }
 
     public void resetDatabase() throws IOException {
@@ -122,7 +159,7 @@ public class Operations {
         submitRequest();
     }
 
-    public Map<String, Integer> getPrivateKeys() {
+    public Map<String, RSAKey> getPrivateKeys() {
         return privateKeys;
     }
 
@@ -130,7 +167,7 @@ public class Operations {
         this.con.getResponseCode();
     }
 
-    private void refreshCookies() throws IOException {
+    private void refreshCookies() {
         String cookiesHeader = this.con.getHeaderField("Set-Cookie");
         if(cookiesHeader != null) {
             List<HttpCookie> cookies = HttpCookie.parse(cookiesHeader);
@@ -159,14 +196,6 @@ public class Operations {
         con.setRequestMethod("GET");
     }
 
-    private void addRequestParameters(Map<String,String> parameters) throws IOException {
-        this.con.setDoOutput(true);
-        DataOutputStream out = new DataOutputStream(this.con.getOutputStream());
-        out.writeBytes(ParameterStringBuilder.getParamsString(parameters));
-        out.flush();
-        out.close();
-    }
-
     private void addCookiesToRequest() {
         this.con.setRequestProperty("Cookie",
                 join(this.cookieManager.getCookieStore().getCookies()));
@@ -187,13 +216,11 @@ public class Operations {
         return cookieManager;
     }
 
-    public String getUrlString() {
-        return urlString;
-    }
-
     public HttpURLConnection getCon() {
         return con;
     }
 
-
+    private boolean isKeyInvalid(RSAKey key) {
+        return key.getVal() < 0 || key.getN() < 0;
+    }
 }

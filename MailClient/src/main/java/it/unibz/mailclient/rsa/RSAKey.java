@@ -1,19 +1,21 @@
 package it.unibz.mailclient.rsa;
 
-public class RSAKey {
-    private int[] v;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-    public RSAKey(int val, int n) {
-        this.v = new int[2];
-        this.v[0] = val;
-        this.v[1] = n;
+public class RSAKey {
+    private int val;
+    private int n;
+
+    public RSAKey(@JsonProperty("val") int d, @JsonProperty("n") int n) {
+        this.val = d;
+        this.n = n;
     }
 
     public int getVal() {
-        return this.v[0];
+        return this.val;
     }
 
     public int getN() {
-        return this.v[1];
+        return this.n;
     }
 }

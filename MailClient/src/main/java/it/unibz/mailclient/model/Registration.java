@@ -2,6 +2,7 @@ package it.unibz.mailclient.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.unibz.mailclient.rsa.RSAKey;
 
 public class Registration {
 
@@ -9,9 +10,9 @@ public class Registration {
     private final String surname;
     private final String email;
     private final String password;
-    private final int publicKey;
+    private final RSAKey publicKey;
 
-    public Registration(String name, String surname, String email, String password, int publicKey) {
+    public Registration(String name, String surname, String email, String password, RSAKey publicKey) {
         this.name = name;
         this.surname = surname;
         this.email = email;
@@ -35,7 +36,7 @@ public class Registration {
         return password;
     }
 
-    public int getPublicKey() {
+    public RSAKey getPublicKey() {
         return publicKey;
     }
 

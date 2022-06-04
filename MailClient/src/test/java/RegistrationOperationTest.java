@@ -1,6 +1,6 @@
 import it.unibz.mailclient.Operations;
-import it.unibz.mailclient.model.UserPublicKey;
 import it.unibz.mailclient.rsa.RSA;
+import it.unibz.mailclient.rsa.RSAKey;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -41,10 +41,13 @@ public class RegistrationOperationTest {
     @Test
     public void encryptionAndDecryptionWorksWithNewKeysTest() throws IOException {
         this.operations.register(name, surname, mail, password);
-        UserPublicKey publicKey = this.operations.getUserPublicKey(mail);
+        RSAKey publicKey = this.operations.getUserPublicKey(mail);
 
         String plainText = "hello";
-        int[] cipherText = new RSA().encrypt(plainText, publicKey.getPublicKey());
+        int[] cipherText = new RSA().encrypt(plainText, publicKey.getVal(), publicKey.getN());
+
+        String decryptedMessage = new RSA().decrypt(cipherText, this.operations.getPrivateKeys().get(mail).getVal(), this.operations.getPrivateKeys().get(mail).getN());
+        assertEquals(plainText, decryptedMessage);
     }
 
     @Test
