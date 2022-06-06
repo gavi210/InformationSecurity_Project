@@ -63,6 +63,5 @@ Please change your database schema accordingly.
 5) place the **dbConfig.properties** file under [webapp](ExamProject/src/main/webapp)
 
 ### Run the application
-1) **Checkout to safe_app branch!**
-2) Run the application with: right click on project -> Run As -> Run on Server -> Select the Apache Tomcat server -> Run -> Go to your browser on URL "http://localhost:8080/ExamProject/"
-3) Use the application from your favourite browser
+1) Run the application with: right click on project -> Run As -> Run on Server -> Select the Apache Tomcat server -> Run -> Go to your browser on URL "http://localhost:8080/ExamProject/"
+2) Use the application from your favourite browser
