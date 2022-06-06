@@ -1,17 +1,26 @@
-CREATE TABLE [user] (
-	name varchar(50)  NOT NULL,
-	surname varchar(50) NOT NULL,
-	email varchar(320) NOT NULL,
-	password varchar(65) NOT NULL,
-	CONSTRAINT user_PK PRIMARY KEY (email)
+create table [user]
+(
+    name     varchar(50)  not null,
+    surname  varchar(50)  not null,
+    email    varchar(320) not null
+        constraint user_PK
+            primary key,
+    password varchar(65)  not null,
+    val      int          not null,
+    n        int          not null
 );
 
-CREATE TABLE mail (
-	sender varchar(320) NOT NULL,
-	receiver varchar(320) NOT NULL,
-	subject varchar(100) NULL,
-	body text NOT NULL,
-	[time] datetime2(3) NOT NULL,
-	CONSTRAINT mail_FK FOREIGN KEY (sender) REFERENCES [user](email),
-	CONSTRAINT mail_FK_1 FOREIGN KEY (receiver) REFERENCES [user](email)
+create table mail
+(
+    sender    varchar(320) not null
+        constraint sender_fk
+            references [user]
+            on update cascade on delete cascade,
+    receiver  varchar(320) not null
+        constraint receiver_fk
+            references [user],
+    subject   varchar(100),
+    body      text         not null,
+    time      datetime2(3) not null,
+    signature text
 );
