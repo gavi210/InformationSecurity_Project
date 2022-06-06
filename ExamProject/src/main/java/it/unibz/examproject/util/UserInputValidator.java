@@ -1,5 +1,6 @@
 package it.unibz.examproject.util;
 
+import it.unibz.examproject.model.PublicKey;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.passay.*;
 
@@ -55,5 +56,13 @@ public class UserInputValidator {
 
     public static boolean isMailBodyValid(String body) {
         return body != null && body.length() != 1000;
+    }
+
+    public static boolean isPublicKeyValid(PublicKey publicKey) {
+        return publicKey.getN() > 0 && publicKey.getVal() > 0;
+    }
+
+    public static boolean isSignatureValid(String signature) {
+        return true;
     }
 }

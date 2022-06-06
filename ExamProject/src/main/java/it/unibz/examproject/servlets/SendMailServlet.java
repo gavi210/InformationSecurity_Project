@@ -1,12 +1,14 @@
 package it.unibz.examproject.servlets;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import it.unibz.examproject.model.EmailFromSendMailRequest;
 import it.unibz.examproject.util.Authentication;
+import it.unibz.examproject.util.JsonOperations;
 import it.unibz.examproject.util.RequestSanitizer;
 import it.unibz.examproject.util.UserInputValidator;
 import it.unibz.examproject.util.db.PostgresRepository;
 import it.unibz.examproject.util.db.Repository;
 import it.unibz.examproject.util.db.SQLServerRepository;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,19 +20,14 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
-/**
- * Servlet implementation class SendMailServlet
- */
 @WebServlet("/SendMailServlet")
 public class SendMailServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	private static Repository repository;
 
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
     public SendMailServlet() {}
 
     public void init() {
@@ -51,48 +48,36 @@ public class SendMailServlet extends HttpServlet {
 		}
     }
 
-	/**
-	 * how do we ensure that the client submitting the request is the one logged in? authorization and authentication maybe
-	 * @param request
-	 * @param response
-	 * @throws ServletException
-	 * @throws IOException
-	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		response.setContentType("text/html");
 
 		HttpSession session = request.getSession(false);
 
 		if(!Authentication.isUserLogged(session)) {
-			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-			response.getWriter().print("<html><head><title>Login first!</title></head>");
-			response.getWriter().print("<body>Login first!</body>");
-			response.getWriter().println("</html>");
+			response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
 		}
 		else {
 			Map<String, String> userInfo = (Map<String, String>) session.getAttribute("user");
 			String sender = userInfo.get("email");
 
-			String receiver = request.getParameter("receiver");
-			String subject = request.getParameter("subject");
-			String body = request.getParameter("body");
-			String timestamp = new Date(System.currentTimeMillis()).toInstant().toString();
+			try {
+				String requestBody = request.getReader().lines().collect(Collectors.joining(""));
+				EmailFromSendMailRequest mail = JsonOperations.getObject(requestBody, EmailFromSendMailRequest.class);
 
-			RequestSanitizer.removeAllAttributes(request);
+				RequestSanitizer.removeAllAttributes(request);
 
-			if(UserInputValidator.isEmailAddressValid(receiver) && UserInputValidator.isMailSubjectValid(subject)
-				&& UserInputValidator.isMailBodyValid(body))
-				repository.sendNewMail(sender, receiver, subject, body, timestamp);
+				if(UserInputValidator.isEmailAddressValid(mail.getReceiver()) && UserInputValidator.isMailSubjectValid(mail.getSubject())
+						&& UserInputValidator.isMailBodyValid(mail.getBody()) && UserInputValidator.isSignatureValid(mail.getSignature()))
+					repository.sendNewMail(sender, mail.getReceiver(), mail.getSubject(), mail.getBody(),
+							new Date(System.currentTimeMillis()).toInstant().toString(), mail.getSignature());
 
-			else {
-				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-				response.getWriter().print("<html><head><title>Check input correctness!</title></head>");
-				response.getWriter().print("<body>Check input correctness!</body>");
-				response.getWriter().println("</html>");
+				else {
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Check input correctness");
+				}
+			} catch(JsonProcessingException e) {
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Malformed request body");
 			}
 
-			RequestSanitizer.removeAllAttributes(request);
-			request.getRequestDispatcher("home.jsp").forward(request, response);
 		}
 	}
 }

@@ -1,11 +1,15 @@
 package it.unibz.examproject.util.db;
 
+import it.unibz.examproject.model.Email;
+import it.unibz.examproject.model.PublicKey;
 import org.apache.commons.codec.DecoderException;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 public abstract class Repository {
 
@@ -59,6 +63,10 @@ public abstract class Repository {
 
     protected abstract String getSentEmailsQueryString();
 
+    protected abstract String getResetDatabaseQueryString();
+
+    protected abstract String getUserPublicKetQueryString();
+
     public boolean emailAlreadyInUse(String email) {
         String sql = getExistsUserByEmailQueryString();
         try (PreparedStatement p = connection.prepareStatement(sql)) {
@@ -90,7 +98,7 @@ public abstract class Repository {
         }
     }
 
-    public void sendNewMail(String sender, String receiver, String subject, String body, String timestamp) {
+    public void sendNewMail(String sender, String receiver, String subject, String body, String timestamp, String signature) {
         String sql = getSendEmailQueryString();
         try (PreparedStatement p = connection.prepareStatement(sql)) {
             p.setString(1, sender);
@@ -98,6 +106,7 @@ public abstract class Repository {
             p.setString(3, subject);
             p.setString(4, body);
             p.setString(5, timestamp);
+            p.setString(6, signature);
             p.execute();
 
         } catch (SQLException e) {
@@ -105,13 +114,15 @@ public abstract class Repository {
         }
     }
 
-    public void registerNewUser(String name, String surname, String email, String password) {
+    public void registerNewUser(String name, String surname, String email, String password, int publicKey, int n) {
         String sql = getRegisterNewUserQueryString();
         try (PreparedStatement p = connection.prepareStatement(sql)) {
             p.setString(1, name);
             p.setString(2, surname);
             p.setString(3, email);
             p.setString(4, PasswordSecurity.createHash(password));
+            p.setInt(5, publicKey);
+            p.setInt(6, n);
             p.execute();
         } catch (SQLException | InvalidKeySpecException | NoSuchAlgorithmException e) {
             e.printStackTrace();
@@ -132,6 +143,11 @@ public abstract class Repository {
         return getEmails(email, sent, sql);
     }
 
+    public void resetDatabase() throws SQLException {
+        Statement stm = connection.createStatement();
+        stm.execute(getResetDatabaseQueryString());
+    }
+
     private List<Email> getEmails(String email, List<Email> emailList, String sql) {
         try (PreparedStatement p = connection.prepareStatement(sql)) {
             p.setString(1, email);
@@ -143,13 +159,35 @@ public abstract class Repository {
                 String subject = res.getString(3);
                 String body = res.getString(4);
                 String timestamp = res.getString(5);
+                String signature = res.getString(6);
 
-                emailList.add(new Email(sender, receiver, subject, body, timestamp));
+                emailList.add(new Email(sender, receiver, subject, body, timestamp, signature));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
         return emailList;
+    }
+
+    public PublicKey getUserPublicKey(String email) {
+        String sql = getUserPublicKetQueryString();
+        PublicKey publicKey;
+
+        try (PreparedStatement p = connection.prepareStatement(sql)) {
+            p.setString(1, email);
+            ResultSet res = p.executeQuery();
+
+            if(res.next()) {
+                publicKey = new PublicKey(res.getInt(1), res.getInt(2));
+            }
+            else
+                publicKey = new PublicKey(-1, -1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            publicKey = new PublicKey(-1, -1);
+        }
+
+        return publicKey;
     }
 }

@@ -1,42 +1,31 @@
 package it.unibz.examproject.servlets;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import it.unibz.examproject.model.Registration;
+import it.unibz.examproject.util.Authentication;
+import it.unibz.examproject.util.JsonOperations;
 import it.unibz.examproject.util.UserInputValidator;
-import it.unibz.examproject.util.db.PasswordSecurity;
 import it.unibz.examproject.util.db.PostgresRepository;
 import it.unibz.examproject.util.db.Repository;
 import it.unibz.examproject.util.db.SQLServerRepository;
-import it.unibz.examproject.util.Authentication;
-import it.unibz.examproject.util.RequestSanitizer;
-import jakarta.servlet.http.HttpServlet;
-
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.sql.SQLException;
-import java.util.Properties;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.apache.commons.codec.binary.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
 
-/**
- * Servlet implementation class RegisterServlet
- */
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.Properties;
+import java.util.stream.Collectors;
+
 @WebServlet("/RegisterServlet")
 public class RegisterServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     private static Repository repository;
 
-
-
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
     public RegisterServlet() {
         super();
     }
@@ -59,50 +48,45 @@ public class RegisterServlet extends HttpServlet {
         }
     }
 
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         response.setContentType("text/html");
 
         HttpSession session = request.getSession(false);
 
         if (Authentication.isUserLogged(session)) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().print("<html><head><title>User already logged in!</title></head>");
-            response.getWriter().print("<body>User already logged in!</body>");
-            response.getWriter().println("</html>");
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "User already logged in!");
         } else {
 
-            String name = request.getParameter("name");
-            String surname = request.getParameter("surname");
-            String email = request.getParameter("email");
-            String password = request.getParameter("password");
+            try {
+                String requestBody = request.getReader().lines().collect(Collectors.joining(""));
+                Registration registration = JsonOperations.getObject(requestBody, Registration.class);
 
-            RequestSanitizer.removeAllAttributes(request);
+                System.out.println(registration.toString());
+                if (UserInputValidator.isNameValid(registration.getName()) && UserInputValidator.isSurnameValid(registration.getSurname())
+                        && UserInputValidator.isEmailAddressValid(registration.getEmail()) && UserInputValidator.isPasswordValid(registration.getPassword())
+                        && UserInputValidator.isPublicKeyValid(registration.getPublicKey())) {
+                    boolean emailAlreadyInUse = repository.emailAlreadyInUse(registration.getEmail());
 
-            if (UserInputValidator.isNameValid(name) && UserInputValidator.isSurnameValid(surname)
-                    && UserInputValidator.isEmailAddressValid(email) && UserInputValidator.isPasswordValid(password)) {
-                boolean emailAlreadyInUse = repository.emailAlreadyInUse(email);
+                    if (emailAlreadyInUse) {
+                        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Email already in use!");
+                    } else {
 
-                if (emailAlreadyInUse) {
-                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    response.getWriter().print("<html><head><title>Email already in use!</title></head>");
-                    response.getWriter().print("<body>Email already in use!</body>");
-                    response.getWriter().println("</html>");
+                        HttpSession newSession = request.getSession();
+                        /* assume that the Cookie never expires until the session is invalidated through logout mechanism */
+                        // newSession.setMaxInactiveInterval(3600);
+
+                        Authentication.setUserSession(newSession, registration.getEmail());
+
+                        repository.registerNewUser(registration.getName(), registration.getSurname(), registration.getEmail(),
+                                registration.getPassword(), registration.getPublicKey().getVal(), registration.getPublicKey().getN());
+                    }
                 } else {
-
-                    HttpSession newSession = request.getSession();
-                    newSession.setMaxInactiveInterval(3600);
-                    Authentication.setUserSession(newSession, email);
-
-                    repository.registerNewUser(name, surname, email, password);
-
-                    request.getRequestDispatcher("home.jsp").forward(request, response);
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Check input correctness");
                 }
-            } else {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().print("<html><head><title>Check input correctness!</title></head>");
-                response.getWriter().print("<body>Check input correctness!</body>");
-                response.getWriter().println("</html>");
+            } catch(JsonProcessingException e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Malformed request body");
             }
+
         }
     }
 
