@@ -55,7 +55,10 @@ CREATE TABLE mail (
 ### Connect the application with the database
 1) Make a copy of the file [dbConfigExample.properties](ExamProject/src/main/java/it/unibz/examproject/config/dbConfigExample.properties)
 2) rename the copy to **dbConfig.properties**
-3) edit 
+3) edit the **dbConfig.properties** file and replace the **<someRequiredField>** to fit your environment
+4) note that even the **db.url** has required fields to be inserted
+5) place the **dbConfig.properties** file under [webapp](ExamProject/src/main/webapp)
+
 ### Run the application
 **Checkout to unsafe_app branch!**
 Run the application with: right click on project -> Run As -> Run on Server -> Select the Apache Tomcat server -> Run -> Go to your browser on URL "http://localhost:8080/ExamProject/"
