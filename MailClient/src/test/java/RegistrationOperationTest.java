@@ -36,6 +36,7 @@ public class RegistrationOperationTest {
         this.operations.register(name, surname, mail, password);
 
         assertEquals(1, this.operations.getPrivateKeys().size());
+        System.out.println(this.operations.getPrivateKeys().get(mail).getN());
     }
 
     @Test

@@ -62,6 +62,8 @@ public class GetEmailTest {
         List<Email> inboxReceiver = this.operations.getInboxEmails();
         assertEquals(1, inboxReceiver.size());
         assertEquals(sampleBody, inboxReceiver.get(0).getBody());
+        System.out.println("Initial: " + sampleBody);
+        System.out.println("Received: " + inboxReceiver.get(0).getBody());
     }
 
     @Test

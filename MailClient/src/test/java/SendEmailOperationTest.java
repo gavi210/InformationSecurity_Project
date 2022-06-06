@@ -38,7 +38,7 @@ public class SendEmailOperationTest {
     @Test
     public void testMailIsCorrectlySent() throws IOException {
         this.operations.register(name, surname, mail, password);
-        this.operations.sendEmail(mail, sampleSubject, sampleBody, true);
+        this.operations.sendEmail(mail, sampleSubject, sampleBody, false);
         assertEquals(200, this.operations.getCon().getResponseCode());
     }
 
