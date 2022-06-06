@@ -60,5 +60,4 @@ CREATE TABLE mail (
 5) place the **dbConfig.properties** file under [webapp](ExamProject/src/main/webapp)
 
 ### Run the application
-**Checkout to unsafe_app branch!**
-Run the application with: right click on project -> Run As -> Run on Server -> Select the Apache Tomcat server -> Run -> Go to your browser on URL "http://localhost:8080/ExamProject/"
+Right click on project -> Run As -> Run on Server -> Select the Apache Tomcat server -> Run -> Go to your browser on URL "http://localhost:8080/ExamProject/"
