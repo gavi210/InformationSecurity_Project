@@ -127,5 +127,10 @@ As you can see from the tests' source code, we always reset the database through
 This feature has been introduced to support automated testing, so that previous execution does not affect subsequent tests. 
 Please, for the tester... do not consider that as a vulnerability, since this method would not be part of the code deployed in real environments. 
 The method is there even for you, so that you don't have to manually remove previously registered users and sent emails during your application 
-analysis!. Thank you ;)
+analysis!.
+
+### Vulnerability Assessment and Penetration Testing
+As instructed from the lecturer, a detailed explaination of the vulnerability assessment of the unsafe app and how these vulnerabilities have been patched is available [here on YouTube](https://youtu.be/VlPkjYCt8Dg).
+   
+The following (and final) task is to operate a penetration testing session on the [given application](https://github.com/Sebo-the-tramp/information_security_2022/tree/secure) (which link has been provided by the lecturer itself) is available [on YouTube](https://youtu.be/oHZaxoxNWoE) as the previous task.
 
