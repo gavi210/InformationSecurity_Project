@@ -61,3 +61,6 @@ CREATE TABLE mail (
 
 ### Run the application
 Right click on project -> Run As -> Run on Server -> Select the Apache Tomcat server -> Run -> Go to your browser on URL "http://localhost:8080/ExamProject/"
+	
+### Vulnerability Assessment and Penetration Testing
+As instructed from the lecturer, a detailed explaination of the vulnerability assessment of the unsafe app and how these vulnerabilities have been patched is available [on YouTube](https://youtu.be/VlPkjYCt8Dg).
