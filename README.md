@@ -65,3 +65,6 @@ Please change your database schema accordingly.
 ### Run the application
 1) Run the application with: right click on project -> Run As -> Run on Server -> Select the Apache Tomcat server -> Run -> Go to your browser on URL "http://localhost:8080/ExamProject/"
 2) Use the application from your favourite browser
+	
+### Vulnerability Assessment and Penetration Testing
+As instructed from the lecturer, a detailed explaination of the vulnerability assessment of the unsafe app and how these vulnerabilities have been patched is available [here on YouTube](https://youtu.be/VlPkjYCt8Dg).
